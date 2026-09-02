@@ -125,24 +125,10 @@
   <!-- Mobile Frame Wrapper (Fully Responsive on Mobile Screens & Desktop) -->
   <div class="w-full max-w-md mx-auto min-h-screen bg-white relative flex flex-col shadow-sm sm:border-x border-[#E9EBEF]">
 
-    <!-- Status Bar with Camera Hole -->
-    <div class="sticky top-0 z-40 bg-white/95 backdrop-blur px-4 sm:px-6 pt-3 pb-2.5 border-b border-[#F0F2F5]">
-      <div class="flex justify-between items-center text-[11px] font-semibold text-[#8C919E]">
-        <span>07:11</span>
-        
-        <!-- Camera Cutout where Island emerges from -->
-        <div class="camera-cutout cursor-pointer" title="Click or Shake to Log" id="cameraAnchor"></div>
 
-        <div class="flex items-center space-x-2 text-[#60646F]">
-          <i class="fa-solid fa-wifi text-[10px]"></i>
-          <i class="fa-solid fa-signal text-[10px]"></i>
-          <i class="fa-solid fa-battery-full text-xs"></i>
-        </div>
-      </div>
-    </div>
 
     <!-- DYNAMIC ISLAND POPUP -->
-    <div class="fixed top-2.5 left-0 right-0 max-w-md mx-auto w-full px-3 pointer-events-none flex justify-center z-50">
+    <div class="fixed top-0 left-0 right-0 max-w-md mx-auto w-full px-3 pt-2 pointer-events-none flex justify-center z-50">
       <div id="dynamicIsland" class="island-card-style island-idle-hidden text-white w-full rounded-3xl overflow-hidden">
         
         <!-- Form View -->
@@ -252,7 +238,7 @@
     </div>
 
     <!-- Responsive App Header -->
-    <div class="px-4 sm:px-5 pt-4 pb-3 border-b border-[#F0F2F5] bg-white sticky top-[41px] z-30">
+    <div class="px-4 sm:px-5 pt-[max(14px,env(safe-area-inset-top,14px))] pb-3 border-b border-[#F0F2F5] bg-white sticky top-0 z-30">
       <div class="flex items-center justify-between gap-2">
         <div class="min-w-0">
           <h1 class="text-lg font-extrabold text-[#111317] tracking-tight truncate">ExpensePulse</h1>
@@ -1098,7 +1084,7 @@
 
     // Header Buttons
     document.getElementById('btnHeaderAddExpense').addEventListener('click', openDynamicIsland);
-    document.getElementById('cameraAnchor').addEventListener('click', openDynamicIsland);
+    // cameraAnchor removed
     document.getElementById('btnDismissIsland').addEventListener('click', dismissDynamicIsland);
 
     // Save Expense
@@ -1366,44 +1352,77 @@
     // Search filter
     document.getElementById('searchInput').addEventListener('input', renderTransactions);
 
-    // Hardware Shake & iPhone Back Tap Detection (background)
+    // Robust Intentional Shake & Gesture Detection (Zero False Positives)
+    let isIslandActive = false;
+    let lastShakeTriggerTime = 0;
+
+    // Track open state
+    const originalOpenDynamicIsland = openDynamicIsland;
+    openDynamicIsland = function() {
+      isIslandActive = true;
+      lastShakeTriggerTime = Date.now();
+      originalOpenDynamicIsland();
+    };
+
+    const originalDismissDynamicIsland = dismissDynamicIsland;
+    dismissDynamicIsland = function() {
+      originalDismissDynamicIsland();
+      setTimeout(() => { isIslandActive = false; }, 400);
+    };
+
     if (window.DeviceMotionEvent) {
-      let lastX, lastY, lastZ;
-      let lastTime = 0;
-      let tapHistory = [];
+      let shakeCount = 0;
+      let lastShakePeakTime = 0;
+      let lastZ = undefined;
+      let zTapCount = 0;
+      let lastZTapTime = 0;
 
       window.addEventListener('devicemotion', (e) => {
         const now = Date.now();
-        if (now - lastTime < 60) return;
-        const dt = now - lastTime;
-        lastTime = now;
 
-        const acc = e.accelerationIncludingGravity;
-        if (!acc) return;
+        // 1. Guard: If island is already open or opened in the last 2 seconds, do nothing!
+        if (isIslandActive || (now - lastShakeTriggerTime < 2200)) return;
 
-        if (lastZ !== undefined) {
-          const deltaZ = Math.abs(acc.z - lastZ);
-          if (deltaZ > 12) {
-            tapHistory.push(now);
-            tapHistory = tapHistory.filter(t => now - t < 450);
-            if (tapHistory.length >= 2) {
-              tapHistory = [];
-              openDynamicIsland();
-              return;
+        // 2. Pure Linear Acceleration (excluding constant 9.8 gravity)
+        const acc = e.acceleration;
+        if (acc && acc.x !== null) {
+          const mag = Math.sqrt(acc.x * acc.x + acc.y * acc.y + acc.z * acc.z);
+
+          // Requires a real physical shake (> 18 m/s² of vigorous force)
+          if (mag > 18.5) {
+            if (now - lastShakePeakTime < 450) {
+              shakeCount++;
+              if (shakeCount >= 2) {
+                shakeCount = 0;
+                lastShakeTriggerTime = now;
+                openDynamicIsland();
+                return;
+              }
+            } else {
+              shakeCount = 1;
             }
+            lastShakePeakTime = now;
+          }
+        } else if (e.accelerationIncludingGravity) {
+          // Fallback with gravity offset
+          const gAcc = e.accelerationIncludingGravity;
+          const mag = Math.sqrt(gAcc.x * gAcc.x + gAcc.y * gAcc.y + gAcc.z * gAcc.z);
+          // 9.8 is resting gravity. Vigorous shake exceeds 26 m/s² (approx 2.7g)
+          if (Math.abs(mag - 9.8) > 16.0) {
+            if (now - lastShakePeakTime < 450) {
+              shakeCount++;
+              if (shakeCount >= 2) {
+                shakeCount = 0;
+                lastShakeTriggerTime = now;
+                openDynamicIsland();
+                return;
+              }
+            } else {
+              shakeCount = 1;
+            }
+            lastShakePeakTime = now;
           }
         }
-
-        if (lastX !== undefined && lastY !== undefined) {
-          const speed = (Math.abs(acc.x - lastX) + Math.abs(acc.y - lastY) + Math.abs(acc.z - (lastZ || 0))) / dt * 10000;
-          if (speed > 320) {
-            openDynamicIsland();
-          }
-        }
-
-        lastX = acc.x;
-        lastY = acc.y;
-        lastZ = acc.z;
       });
     }
 
