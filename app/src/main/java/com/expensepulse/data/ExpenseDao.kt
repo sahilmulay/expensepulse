@@ -77,4 +77,7 @@ interface ExpenseDao {
 
     @Query("SELECT * FROM transactions WHERE upiTransactionId = :upiId LIMIT 1")
     suspend fun findByUpiId(upiId: String): TransactionEntity?
+
+    @Query("DELETE FROM transactions")
+    suspend fun clearAllTransactions()
 }

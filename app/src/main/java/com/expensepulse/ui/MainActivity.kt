@@ -252,6 +252,11 @@ fun MainAppScreen(
                             val parsed = GPayStatementParser.parseStatementText(text)
                             repository.insertAll(parsed)
                         }
+                    },
+                    onClearAllData = {
+                        coroutineScope.launch(Dispatchers.IO) {
+                            repository.clearAllTransactions()
+                        }
                     }
                 )
             }
@@ -632,7 +637,8 @@ fun SettingsTab(
     onToggleShake: (Boolean) -> Unit,
     onRequestOverlay: () -> Unit,
     onTestOverlay: () -> Unit,
-    onImportText: (String) -> Unit
+    onImportText: (String) -> Unit,
+    onClearAllData: () -> Unit
 ) {
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE) }
@@ -777,6 +783,69 @@ fun SettingsTab(
 
                     importStatus?.let { status ->
                         Text(status, color = Color(0xFF059669), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    }
+                }
+            }
+        }
+
+        // Clear All Data (Start Fresh) Section
+        item {
+            var showClearDialog by remember { mutableStateOf(false) }
+
+            if (showClearDialog) {
+                AlertDialog(
+                    onDismissRequest = { showClearDialog = false },
+                    title = { Text("Clear All Data?", fontWeight = FontWeight.Bold, color = Color(0xFF111317)) },
+                    text = {
+                        Text(
+                            "This will permanently delete all recorded transactions and reset your ledger to fresh zero. This action cannot be undone.",
+                            fontSize = 13.sp,
+                            color = Color(0xFF454854)
+                        )
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                showClearDialog = false
+                                onClearAllData()
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDC2626))
+                        ) {
+                            Text("Yes, Clear All", color = Color.White, fontWeight = FontWeight.Bold)
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showClearDialog = false }) {
+                            Text("Cancel", color = Color(0xFF111317))
+                        }
+                    },
+                    containerColor = Color.White,
+                    shape = RoundedCornerShape(16.dp)
+                )
+            }
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                shape = RoundedCornerShape(16.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE9EBEF))
+            ) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("🗑️ Reset & Clear Data", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color(0xFF111317))
+                    Text(
+                        "Wipe all testing transactions and start completely fresh from ₹0.00.",
+                        fontSize = 12.sp,
+                        color = Color(0xFF8C919E)
+                    )
+                    OutlinedButton(
+                        onClick = { showClearDialog = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(10.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFDC2626))
+                    ) {
+                        Icon(Icons.Default.DeleteOutline, contentDescription = null, tint = Color(0xFFDC2626), modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Clear All Transactions (Fresh Start)", color = Color(0xFFDC2626), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
                 }
             }

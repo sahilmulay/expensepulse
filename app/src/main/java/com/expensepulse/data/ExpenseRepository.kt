@@ -30,4 +30,6 @@ class ExpenseRepository(private val dao: ExpenseDao) {
     suspend fun delete(transaction: TransactionEntity) = dao.delete(transaction)
 
     suspend fun findByUpiId(upiId: String): TransactionEntity? = dao.findByUpiId(upiId)
+    
+    suspend fun clearAllTransactions() = dao.clearAllTransactions()
 }
