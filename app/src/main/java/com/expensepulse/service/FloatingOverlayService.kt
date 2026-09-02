@@ -130,18 +130,22 @@ class FloatingOverlayService : Service() {
                 else -> Category.OTHER
             }
 
-            val noteInput = etNote?.text?.toString()?.trim()
-            val merchant = if (!noteInput.isNullOrEmpty()) {
-                noteInput
-            } else {
-                "Paid to ${category.displayName}"
-            }
-
             val bankAccount = when (rgAccounts?.checkedRadioButtonId) {
                 R.id.rb_island_sbi -> "State Bank of India 7067"
                 R.id.rb_island_ippb -> "India Post Payment Bank 2938"
                 R.id.rb_island_cash -> "Cash"
                 else -> "State Bank of India 7067"
+            }
+
+            val noteInput = etNote?.text?.toString()?.trim()
+            val merchant = if (!noteInput.isNullOrEmpty()) {
+                noteInput
+            } else if (bankAccount == "Cash" && (category == Category.OTHER || category == Category.FOOD_DINING && noteInput.isNullOrEmpty() && false)) {
+                "Paid via Cash"
+            } else if (bankAccount == "Cash" && category == Category.OTHER) {
+                "Paid via Cash"
+            } else {
+                "Paid to ${category.displayName}"
             }
 
             val transaction = TransactionEntity(
