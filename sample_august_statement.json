@@ -1,0 +1,802 @@
+[
+  {
+    "date": "01 Aug, 2026 04:15 PM",
+    "action": "Paid to SRI SAI TIFFANS",
+    "amount": 20.0,
+    "type": "EXPENSE",
+    "upi_id": "621324601075",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "01 Aug, 2026 09:29 PM",
+    "action": "Paid to C KAVITHA",
+    "amount": 1565.0,
+    "type": "EXPENSE",
+    "upi_id": "621350408347",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "02 Aug, 2026 08:36 AM",
+    "action": "Paid to Amruta Mote",
+    "amount": 250.0,
+    "type": "EXPENSE",
+    "upi_id": "621461611965",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "02 Aug, 2026 08:40 AM",
+    "action": "Paid to Ashna Kumbhar",
+    "amount": 700.0,
+    "type": "EXPENSE",
+    "upi_id": "621461739919",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "02 Aug, 2026 08:42 AM",
+    "action": "Paid to Kedar Patil",
+    "amount": 291.0,
+    "type": "EXPENSE",
+    "upi_id": "621461818398",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "02 Aug, 2026 08:44 AM",
+    "action": "Paid to Amruta Mote",
+    "amount": 610.0,
+    "type": "EXPENSE",
+    "upi_id": "621461960737",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "02 Aug, 2026 08:55 AM",
+    "action": "Received from Kedar Patil",
+    "amount": 64.0,
+    "type": "INCOME",
+    "upi_id": "621462470740",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "02 Aug, 2026 11:35 AM",
+    "action": "Received from NIHAL JAHID SHAIKH",
+    "amount": 1000.0,
+    "type": "INCOME",
+    "upi_id": "110344850104",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "02 Aug, 2026 10:55 PM",
+    "action": "Paid to NATRAJ VEGIS",
+    "amount": 1175.0,
+    "type": "EXPENSE",
+    "upi_id": "621417930712",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "04 Aug, 2026 01:39 PM",
+    "action": "Received from SHREYA DADASO KOLI",
+    "amount": 670.0,
+    "type": "INCOME",
+    "upi_id": "621614198531",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "04 Aug, 2026 02:26 PM",
+    "action": "Paid to UMAR GOUSPEER JAHAGIRDAR",
+    "amount": 1100.0,
+    "type": "EXPENSE",
+    "upi_id": "621608260214",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "04 Aug, 2026 02:32 PM",
+    "action": "Paid to MC DONALDS",
+    "amount": 236.24,
+    "type": "EXPENSE",
+    "upi_id": "658284760149",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "04 Aug, 2026 03:35 PM",
+    "action": "Paid to SHRIRAM PETROLEUM",
+    "amount": 200.0,
+    "type": "EXPENSE",
+    "upi_id": "621612162874",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "04 Aug, 2026 04:09 PM",
+    "action": "Received from SWAPNIL RAVASO MOKASHI",
+    "amount": 240.0,
+    "type": "INCOME",
+    "upi_id": "110360988861",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "04 Aug, 2026 07:24 PM",
+    "action": "Received from NIHAL JAHID SHAIKH",
+    "amount": 366.0,
+    "type": "INCOME",
+    "upi_id": "110362190948",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "05 Aug, 2026 11:20 AM",
+    "action": "Paid to AKRAM SHAIKH",
+    "amount": 18355.0,
+    "type": "EXPENSE",
+    "upi_id": "621752158496",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "05 Aug, 2026 01:04 PM",
+    "action": "Received from NIHAL JAHID SHAIKH",
+    "amount": 500.0,
+    "type": "INCOME",
+    "upi_id": "110368190321",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "05 Aug, 2026 03:48 PM",
+    "action": "Received from Amruta Mote",
+    "amount": 600.0,
+    "type": "INCOME",
+    "upi_id": "127415973863",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "05 Aug, 2026 05:19 PM",
+    "action": "Paid to ANIL RAJU SHETTY",
+    "amount": 15.0,
+    "type": "EXPENSE",
+    "upi_id": "621767883290",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "06 Aug, 2026 06:27 PM",
+    "action": "Received from SUJATA SHITAL MULAY",
+    "amount": 2550.0,
+    "type": "INCOME",
+    "upi_id": "386506186791",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "06 Aug, 2026 08:09 PM",
+    "action": "Received from NIHAL JAHID SHAIKH",
+    "amount": 330.0,
+    "type": "INCOME",
+    "upi_id": "110379636617",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "06 Aug, 2026 08:15 PM",
+    "action": "Paid to Zomato",
+    "amount": 433.46,
+    "type": "EXPENSE",
+    "upi_id": "621835978214",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "06 Aug, 2026 08:15 PM",
+    "action": "Received from VEDANT SATISH JADHAV",
+    "amount": 86.0,
+    "type": "INCOME",
+    "upi_id": "233413662653",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "06 Aug, 2026 08:15 PM",
+    "action": "Received from Aditya Kerimane",
+    "amount": 86.0,
+    "type": "INCOME",
+    "upi_id": "621891825876",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "06 Aug, 2026 08:36 PM",
+    "action": "Paid to VEDANT SATISH JADHAV",
+    "amount": 86.0,
+    "type": "EXPENSE",
+    "upi_id": "621837707006",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "06 Aug, 2026 08:37 PM",
+    "action": "Paid to Manthan Anil Vanamore",
+    "amount": 360.0,
+    "type": "EXPENSE",
+    "upi_id": "621837834373",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "06 Aug, 2026 08:37 PM",
+    "action": "Paid to Manthan Anil Vanamore",
+    "amount": 10.0,
+    "type": "EXPENSE",
+    "upi_id": "621837846796",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "06 Aug, 2026 08:38 PM",
+    "action": "Received from VEDANT SATISH JADHAV",
+    "amount": 85.0,
+    "type": "INCOME",
+    "upi_id": "261187175765",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "06 Aug, 2026 10:42 PM",
+    "action": "Received from VEDANT SATISH JADHAV",
+    "amount": 85.0,
+    "type": "INCOME",
+    "upi_id": "403376068100",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "06 Aug, 2026 10:42 PM",
+    "action": "Received from Aditya Kerimane",
+    "amount": 85.0,
+    "type": "INCOME",
+    "upi_id": "621867538017",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "07 Aug, 2026 11:41 PM",
+    "action": "Paid to Shruti Birje",
+    "amount": 1000.0,
+    "type": "EXPENSE",
+    "upi_id": "658589831272",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "07 Aug, 2026 11:42 PM",
+    "action": "Received from Shruti Birje",
+    "amount": 1000.0,
+    "type": "INCOME",
+    "upi_id": "621907733820",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "08 Aug, 2026 09:52 AM",
+    "action": "Received from NIHAL JAHID SHAIKH",
+    "amount": 300.0,
+    "type": "INCOME",
+    "upi_id": "110389910985",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "08 Aug, 2026 11:46 AM",
+    "action": "Received from ADARSH VIJAY SINDAGI",
+    "amount": 120.0,
+    "type": "INCOME",
+    "upi_id": "658602896491",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "09 Aug, 2026 01:44 PM",
+    "action": "Paid to TRENT LIMITED",
+    "amount": 949.05,
+    "type": "EXPENSE",
+    "upi_id": "622181990981",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "10 Aug, 2026 11:20 AM",
+    "action": "Received from Dilip Mulay",
+    "amount": 1200.0,
+    "type": "INCOME",
+    "upi_id": "658838709965",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "12 Aug, 2026 03:50 PM",
+    "action": "Received from Miss TANVI ZAKRDE",
+    "amount": 3000.0,
+    "type": "INCOME",
+    "upi_id": "542194953875",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "12 Aug, 2026 05:36 PM",
+    "action": "Paid to ROYAL ENFIELD HARE MADHAV",
+    "amount": 20000.0,
+    "type": "EXPENSE",
+    "upi_id": "622472017990",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "12 Aug, 2026 07:20 PM",
+    "action": "Received from Snehal Mulay",
+    "amount": 3110.0,
+    "type": "INCOME",
+    "upi_id": "659037118133",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "13 Aug, 2026 10:14 AM",
+    "action": "Paid to Ganga Furnishing",
+    "amount": 17492.0,
+    "type": "EXPENSE",
+    "upi_id": "622505989684",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "13 Aug, 2026 10:15 AM",
+    "action": "Paid to Kapil Dev",
+    "amount": 11286.0,
+    "type": "EXPENSE",
+    "upi_id": "622506046196",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "13 Aug, 2026 10:16 AM",
+    "action": "Paid to DUDH ANI DUGDHJANYA PADARTHA UTPADAK ASSOCIATION SANGLI",
+    "amount": 7000.0,
+    "type": "EXPENSE",
+    "upi_id": "622506055953",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "13 Aug, 2026 10:16 AM",
+    "action": "Paid to AKRAM SHAIKH",
+    "amount": 20000.0,
+    "type": "EXPENSE",
+    "upi_id": "622506111289",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "13 Aug, 2026 04:28 PM",
+    "action": "Received from VEDANT SATISH JADHAV",
+    "amount": 163.0,
+    "type": "INCOME",
+    "upi_id": "071465376188",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "13 Aug, 2026 04:28 PM",
+    "action": "Received from NIHAL JAHID SHAIKH",
+    "amount": 162.0,
+    "type": "INCOME",
+    "upi_id": "742118650992",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "13 Aug, 2026 04:28 PM",
+    "action": "Received from Aditya almane",
+    "amount": 165.0,
+    "type": "INCOME",
+    "upi_id": "659192021237",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "13 Aug, 2026 04:29 PM",
+    "action": "Received from Aditya Kerimane",
+    "amount": 163.0,
+    "type": "INCOME",
+    "upi_id": "659110960663",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "14 Aug, 2026 05:03 PM",
+    "action": "Received from Rishit Choksi",
+    "amount": 21000.0,
+    "type": "INCOME",
+    "upi_id": "127906555866",
+    "bank": "India Post Payment Bank 2938"
+  },
+  {
+    "date": "14 Aug, 2026 11:20 PM",
+    "action": "Received from VEDANT SATISH JADHAV",
+    "amount": 90.0,
+    "type": "INCOME",
+    "upi_id": "190598350689",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "14 Aug, 2026 11:20 PM",
+    "action": "Received from Adarsh Vijay Sindagi",
+    "amount": 100.0,
+    "type": "INCOME",
+    "upi_id": "004108245923",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "14 Aug, 2026 11:21 PM",
+    "action": "Received from NIHAL JAHID SHAIKH",
+    "amount": 180.0,
+    "type": "INCOME",
+    "upi_id": "342458528538",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "16 Aug, 2026 01:54 PM",
+    "action": "Received from NIHAL JAHID SHAIKH",
+    "amount": 330.0,
+    "type": "INCOME",
+    "upi_id": "110450766685",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "17 Aug, 2026 10:28 PM",
+    "action": "Self transfer to State Bank of India 7067",
+    "amount": 1.0,
+    "type": "SELF_TRANSFER",
+    "upi_id": "659539187251",
+    "bank": "India Post Payment Bank 2938"
+  },
+  {
+    "date": "18 Aug, 2026 09:07 PM",
+    "action": "Paid to YouTube",
+    "amount": 179.0,
+    "type": "EXPENSE",
+    "upi_id": "800558472306",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "20 Aug, 2026 05:45 PM",
+    "action": "Received from RAJENDRA PATEL",
+    "amount": 12000.0,
+    "type": "INCOME",
+    "upi_id": "128224924225",
+    "bank": "India Post Payment Bank 2938"
+  },
+  {
+    "date": "22 Aug, 2026 12:58 PM",
+    "action": "Received from MOHD SAJID AHMED",
+    "amount": 5500.0,
+    "type": "INCOME",
+    "upi_id": "090005252325",
+    "bank": "India Post Payment Bank 2938"
+  },
+  {
+    "date": "22 Aug, 2026 08:25 PM",
+    "action": "Paid to Shafik Mulla",
+    "amount": 10000.0,
+    "type": "EXPENSE",
+    "upi_id": "623439265266",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "23 Aug, 2026 08:57 AM",
+    "action": "Paid to Flipkart",
+    "amount": 830.0,
+    "type": "EXPENSE",
+    "upi_id": "660183020237",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "23 Aug, 2026 02:56 PM",
+    "action": "Received from NIHAL JAHID SHAIKH",
+    "amount": 100.0,
+    "type": "INCOME",
+    "upi_id": "110502618260",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "23 Aug, 2026 04:06 PM",
+    "action": "Paid to SPOTIFY INDIA PVT LTD",
+    "amount": 69.0,
+    "type": "EXPENSE",
+    "upi_id": "103901502808",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "24 Aug, 2026 11:48 AM",
+    "action": "Received from Abhishak Chakraborty",
+    "amount": 20500.0,
+    "type": "INCOME",
+    "upi_id": "623617222678",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "24 Aug, 2026 11:50 AM",
+    "action": "Paid to 2787",
+    "amount": 25000.0,
+    "type": "EXPENSE",
+    "upi_id": "623610326935",
+    "bank": "India Post Payment Bank 2938"
+  },
+  {
+    "date": "24 Aug, 2026 11:50 AM",
+    "action": "Paid to 2787",
+    "amount": 25000.0,
+    "type": "EXPENSE",
+    "upi_id": "623692026232",
+    "bank": "India Post Payment Bank 2938"
+  },
+  {
+    "date": "24 Aug, 2026 11:51 AM",
+    "action": "Self transfer to India Post Payment Bank 2938",
+    "amount": 20500.0,
+    "type": "SELF_TRANSFER",
+    "upi_id": "623657244814",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "24 Aug, 2026 02:24 PM",
+    "action": "Paid to Kishor Subhash Jadhav",
+    "amount": 150.0,
+    "type": "EXPENSE",
+    "upi_id": "623627202154",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "24 Aug, 2026 02:25 PM",
+    "action": "Paid to Kiran Trading Company",
+    "amount": 60.0,
+    "type": "EXPENSE",
+    "upi_id": "623627262783",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "25 Aug, 2026 09:44 AM",
+    "action": "Received from Soham Mulay",
+    "amount": 2000.0,
+    "type": "INCOME",
+    "upi_id": "128464281626",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "25 Aug, 2026 12:02 PM",
+    "action": "Paid to Sadashiv Vagyapapa Adisare",
+    "amount": 10.0,
+    "type": "EXPENSE",
+    "upi_id": "623777947135",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "25 Aug, 2026 12:08 PM",
+    "action": "Paid to Mangave petrolinks",
+    "amount": 10.0,
+    "type": "EXPENSE",
+    "upi_id": "623778348593",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "25 Aug, 2026 02:05 PM",
+    "action": "Paid to GANGA XEROX",
+    "amount": 3.0,
+    "type": "EXPENSE",
+    "upi_id": "623785910503",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "25 Aug, 2026 02:11 PM",
+    "action": "Paid to GANGA XEROX",
+    "amount": 6.0,
+    "type": "EXPENSE",
+    "upi_id": "623786251970",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "25 Aug, 2026 04:19 PM",
+    "action": "Paid to Mane Tailors",
+    "amount": 30.0,
+    "type": "EXPENSE",
+    "upi_id": "623793516623",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "25 Aug, 2026 04:25 PM",
+    "action": "Paid to Chay 24M",
+    "amount": 12.0,
+    "type": "EXPENSE",
+    "upi_id": "623793922285",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "25 Aug, 2026 07:30 PM",
+    "action": "Paid to REDBUS",
+    "amount": 1258.95,
+    "type": "EXPENSE",
+    "upi_id": "623708177890",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "25 Aug, 2026 08:37 PM",
+    "action": "Paid to Jaikishan Patel",
+    "amount": 49.0,
+    "type": "EXPENSE",
+    "upi_id": "660380575024",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "26 Aug, 2026 08:59 AM",
+    "action": "Paid to SACHIN SITARAM KATKAR",
+    "amount": 20.0,
+    "type": "EXPENSE",
+    "upi_id": "623826525790",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "26 Aug, 2026 09:00 AM",
+    "action": "Paid to Indian Railways",
+    "amount": 10.0,
+    "type": "EXPENSE",
+    "upi_id": "623826568203",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "26 Aug, 2026 11:02 AM",
+    "action": "Received from ANIKETDILIPMULAY",
+    "amount": 2000.0,
+    "type": "INCOME",
+    "upi_id": "110224061107",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "26 Aug, 2026 11:38 AM",
+    "action": "Received from PRANAV DEELIP MULAY",
+    "amount": 2000.0,
+    "type": "INCOME",
+    "upi_id": "340220612986",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "26 Aug, 2026 01:15 PM",
+    "action": "Received from kadam siddharth",
+    "amount": 1000.0,
+    "type": "INCOME",
+    "upi_id": "623871202835",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "26 Aug, 2026 05:06 PM",
+    "action": "Received from NIHAL JAHID SHAIKH",
+    "amount": 200.0,
+    "type": "INCOME",
+    "upi_id": "110526231981",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "26 Aug, 2026 08:23 PM",
+    "action": "Paid to Jaish Momin",
+    "amount": 530.0,
+    "type": "EXPENSE",
+    "upi_id": "623868756610",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "26 Aug, 2026 09:14 PM",
+    "action": "Received from VEDANT SATISH JADHAV",
+    "amount": 230.0,
+    "type": "INCOME",
+    "upi_id": "630267987884",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "27 Aug, 2026 09:24 AM",
+    "action": "Paid to M/S.MORE MART",
+    "amount": 30.0,
+    "type": "EXPENSE",
+    "upi_id": "623977874355",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "27 Aug, 2026 11:04 AM",
+    "action": "Received from Abhishak Chakraborty",
+    "amount": 12000.0,
+    "type": "INCOME",
+    "upi_id": "623989325300",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "27 Aug, 2026 11:17 AM",
+    "action": "Paid to M/S.AVINASH CARGO PRIVATE LIMITED",
+    "amount": 335.0,
+    "type": "EXPENSE",
+    "upi_id": "623990102010",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "27 Aug, 2026 04:37 PM",
+    "action": "Received from Dilip Mulay",
+    "amount": 355.0,
+    "type": "INCOME",
+    "upi_id": "623980082467",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "27 Aug, 2026 04:41 PM",
+    "action": "Received from Manan Panchal",
+    "amount": 14000.0,
+    "type": "INCOME",
+    "upi_id": "623927794423",
+    "bank": "India Post Payment Bank 2938"
+  },
+  {
+    "date": "27 Aug, 2026 07:19 PM",
+    "action": "Paid to OMKAR ANAND GADADE",
+    "amount": 1900.0,
+    "type": "EXPENSE",
+    "upi_id": "623923011396",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "28 Aug, 2026 04:55 PM",
+    "action": "Received from Aditya Kerimane",
+    "amount": 230.0,
+    "type": "INCOME",
+    "upi_id": "660670471167",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "29 Aug, 2026 12:53 PM",
+    "action": "Paid to IRUVE BAKE AND BREW",
+    "amount": 20.0,
+    "type": "EXPENSE",
+    "upi_id": "624116597964",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "29 Aug, 2026 05:40 PM",
+    "action": "Paid to Jio Prepaid",
+    "amount": 19.0,
+    "type": "EXPENSE",
+    "upi_id": "624133416248",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "29 Aug, 2026 05:42 PM",
+    "action": "Paid to JIO",
+    "amount": 349.0,
+    "type": "EXPENSE",
+    "upi_id": "624133576673",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "29 Aug, 2026 05:53 PM",
+    "action": "Paid to Miss SONAL SHITAL MULAY",
+    "amount": 2000.0,
+    "type": "EXPENSE",
+    "upi_id": "624134346620",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "29 Aug, 2026 05:56 PM",
+    "action": "Paid to BLINKIT",
+    "amount": 1511.0,
+    "type": "EXPENSE",
+    "upi_id": "624134556420",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "29 Aug, 2026 08:04 PM",
+    "action": "Paid to TORQ 03 SPORTS AND",
+    "amount": 100.0,
+    "type": "EXPENSE",
+    "upi_id": "624145295871",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "29 Aug, 2026 10:18 PM",
+    "action": "Paid to MAHESH",
+    "amount": 30.0,
+    "type": "EXPENSE",
+    "upi_id": "660701473335",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "30 Aug, 2026 07:16 PM",
+    "action": "Received from NIHAL JAHID SHAIKH",
+    "amount": 300.0,
+    "type": "INCOME",
+    "upi_id": "110556408223",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "31 Aug, 2026 09:36 AM",
+    "action": "Received from Piyusha Mulay",
+    "amount": 600.0,
+    "type": "INCOME",
+    "upi_id": "624318579328",
+    "bank": "State Bank of India 7067"
+  },
+  {
+    "date": "31 Aug, 2026 06:42 PM",
+    "action": "Received from MAKARAND ANAND POTDAR",
+    "amount": 2000.0,
+    "type": "INCOME",
+    "upi_id": "313643449983",
+    "bank": "State Bank of India 7067"
+  }
+]

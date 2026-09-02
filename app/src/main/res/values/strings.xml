@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">ExpensePulse</string>
+    <string name="shake_service_running">ExpensePulse Active</string>
+    <string name="shake_service_desc">Shake your phone after any UPI payment to quick-log</string>
+    <string name="quick_add_title">Quick Log Expense</string>
+    <string name="amount_hint">0.00</string>
+    <string name="note_hint">What was this for? (optional)</string>
+    <string name="save_expense">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="shake_detected">Shake detected! Opening Quick Log...</string>
+</resources>

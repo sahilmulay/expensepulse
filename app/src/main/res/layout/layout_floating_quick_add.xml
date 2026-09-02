@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_overlay_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="16dp"
+    app:cardBackgroundColor="#FFFFFF"
+    app:cardCornerRadius="24dp"
+    app:cardElevation="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Top Header & Drag / Close Bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="⚡ Quick Log Expense"
+                android:textColor="#191C1A"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <ImageButton
+                android:id="@+id/btn_overlay_close"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Close"
+                android:src="@android:drawable/ic_menu_close_clear_cancel" />
+        </LinearLayout>
+
+        <!-- Amount Input Field -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="₹ "
+                android:textColor="#006C4C"
+                android:textSize="32sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/et_overlay_amount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:hint="0"
+                android:inputType="numberDecimal"
+                android:textColor="#006C4C"
+                android:textSize="32sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="8dp"
+            android:background="#E0E0E0" />
+
+        <!-- For What (Quick Category selector) -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="For what?"
+            android:textColor="#707973"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:scrollbars="none">
+
+            <RadioGroup
+                android:id="@+id/rg_categories"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/rb_food"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginEnd="6dp"
+                    android:background="@drawable/chip_selector"
+                    android:button="@null"
+                    android:checked="true"
+                    android:paddingHorizontal="14dp"
+                    android:text="🍔 Food"
+                    android:textColor="#191C1A"
+                    android:textSize="13sp" />
+
+                <RadioButton
+                    android:id="@+id/rb_chai"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginEnd="6dp"
+                    android:background="@drawable/chip_selector"
+                    android:button="@null"
+                    android:paddingHorizontal="14dp"
+                    android:text="☕ Chai/Snacks"
+                    android:textColor="#191C1A"
+                    android:textSize="13sp" />
+
+                <RadioButton
+                    android:id="@+id/rb_groceries"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginEnd="6dp"
+                    android:background="@drawable/chip_selector"
+                    android:button="@null"
+                    android:paddingHorizontal="14dp"
+                    android:text="🛒 Groceries"
+                    android:textColor="#191C1A"
+                    android:textSize="13sp" />
+
+                <RadioButton
+                    android:id="@+id/rb_travel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginEnd="6dp"
+                    android:background="@drawable/chip_selector"
+                    android:button="@null"
+                    android:paddingHorizontal="14dp"
+                    android:text="🛵 Travel"
+                    android:textColor="#191C1A"
+                    android:textSize="13sp" />
+
+                <RadioButton
+                    android:id="@+id/rb_split"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginEnd="6dp"
+                    android:background="@drawable/chip_selector"
+                    android:button="@null"
+                    android:paddingHorizontal="14dp"
+                    android:text="🤝 Split"
+                    android:textColor="#191C1A"
+                    android:textSize="13sp" />
+
+                <RadioButton
+                    android:id="@+id/rb_bills"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginEnd="6dp"
+                    android:background="@drawable/chip_selector"
+                    android:button="@null"
+                    android:paddingHorizontal="14dp"
+                    android:text="⚡ Bills"
+                    android:textColor="#191C1A"
+                    android:textSize="13sp" />
+
+                <RadioButton
+                    android:id="@+id/rb_other"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:background="@drawable/chip_selector"
+                    android:button="@null"
+                    android:paddingHorizontal="14dp"
+                    android:text="📝 Other"
+                    android:textColor="#191C1A"
+                    android:textSize="13sp" />
+            </RadioGroup>
+        </HorizontalScrollView>
+
+        <!-- How (Bank Account / Payment Mode) -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Paid using?"
+            android:textColor="#707973"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:scrollbars="none">
+
+            <RadioGroup
+                android:id="@+id/rg_accounts"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/rb_sbi"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:layout_marginEnd="6dp"
+                    android:background="@drawable/chip_selector"
+                    android:button="@null"
+                    android:checked="true"
+                    android:paddingHorizontal="12dp"
+                    android:text="🏦 SBI 7067"
+                    android:textColor="#191C1A"
+                    android:textSize="12sp" />
+
+                <RadioButton
+                    android:id="@+id/rb_ippb"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:layout_marginEnd="6dp"
+                    android:background="@drawable/chip_selector"
+                    android:button="@null"
+                    android:paddingHorizontal="12dp"
+                    android:text="📮 IPPB 2938"
+                    android:textColor="#191C1A"
+                    android:textSize="12sp" />
+
+                <RadioButton
+                    android:id="@+id/rb_cash"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:background="@drawable/chip_selector"
+                    android:button="@null"
+                    android:paddingHorizontal="12dp"
+                    android:text="💵 Cash"
+                    android:textColor="#191C1A"
+                    android:textSize="12sp" />
+            </RadioGroup>
+        </HorizontalScrollView>
+
+        <!-- Merchant / Note Input -->
+        <EditText
+            android:id="@+id/et_overlay_note"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_rounded_input"
+            android:hint="Merchant / Note (e.g. Zomato, Sai Tiffins)"
+            android:inputType="textCapWords"
+            android:paddingHorizontal="12dp"
+            android:textColor="#191C1A"
+            android:textColorHint="#9E9E9E"
+            android:textSize="13sp" />
+
+        <!-- Save Button -->
+        <Button
+            android:id="@+id/btn_overlay_save"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="#006C4C"
+            android:text="Save Expense"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

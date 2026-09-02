@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>ExpensePulse • Personal Expense Manager</title>
+  
+  <!-- PWA Metadata & Mobile App Tags -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <meta name="theme-color" content="#111317">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ExpensePulse">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Mozilla PDF.js for local on-device PDF parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      padding-bottom: env(safe-area-inset-bottom, 20px);
+    }
+
+    /* Hide scrollbars while allowing scroll */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* 60fps Liquid Dynamic Island Animation */
+    @keyframes liquidOpen {
+      0% {
+        transform: translate3d(0, -22px, 0) scale3d(0.12, 0.12, 1);
+        border-radius: 9999px;
+        opacity: 0;
+      }
+      50% {
+        transform: translate3d(0, 3px, 0) scale3d(0.72, 1.08, 1);
+        border-radius: 40px;
+        opacity: 1;
+      }
+      80% {
+        transform: translate3d(0, 0, 0) scale3d(1.015, 0.99, 1);
+        border-radius: 28px;
+      }
+      100% {
+        transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
+        border-radius: 26px;
+        opacity: 1;
+      }
+    }
+
+    @keyframes liquidClose {
+      0% {
+        transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
+        border-radius: 26px;
+        opacity: 1;
+      }
+      40% {
+        transform: translate3d(0, -4px, 0) scale3d(0.8, 1.04, 1);
+        border-radius: 36px;
+        opacity: 0.9;
+      }
+      100% {
+        transform: translate3d(0, -22px, 0) scale3d(0.1, 0.1, 1);
+        border-radius: 9999px;
+        opacity: 0;
+      }
+    }
+
+    .island-open {
+      animation: liquidOpen 0.42s cubic-bezier(0.2, 0.9, 0.28, 1) forwards;
+      will-change: transform, opacity;
+      transform-origin: top center;
+      pointer-events: auto !important;
+    }
+
+    .island-close {
+      animation: liquidClose 0.32s cubic-bezier(0.35, 0, 0.2, 1) forwards;
+      will-change: transform, opacity;
+      transform-origin: top center;
+      pointer-events: none !important;
+    }
+
+    .island-card-style {
+      background: #090A0E;
+      box-shadow: 0 24px 48px -8px rgba(0, 0, 0, 0.55),
+                  0 0 0 1px rgba(255, 255, 255, 0.1),
+                  inset 0 1px 1px 0 rgba(255, 255, 255, 0.25);
+    }
+
+    .island-idle-hidden {
+      transform: translate3d(0, -22px, 0) scale3d(0.1, 0.1, 1);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .fade-content {
+      transition: opacity 0.22s ease 0.14s;
+    }
+
+    .camera-cutout {
+      width: 12px;
+      height: 12px;
+      background: #090A0E;
+      border-radius: 9999px;
+      box-shadow: inset 0 0 2px rgba(255,255,255,0.25);
+    }
+  </style>
+</head>
+<body class="bg-[#F5F6F8] text-[#1A1C20] min-h-screen flex flex-col antialiased select-none">
+
+  <!-- Mobile Frame Wrapper (Fully Responsive on Mobile Screens & Desktop) -->
+  <div class="w-full max-w-md mx-auto min-h-screen bg-white relative flex flex-col shadow-sm sm:border-x border-[#E9EBEF]">
+
+    <!-- Status Bar with Camera Hole -->
+    <div class="sticky top-0 z-40 bg-white/95 backdrop-blur px-4 sm:px-6 pt-3 pb-2.5 border-b border-[#F0F2F5]">
+      <div class="flex justify-between items-center text-[11px] font-semibold text-[#8C919E]">
+        <span>07:11</span>
+        
+        <!-- Camera Cutout where Island emerges from -->
+        <div class="camera-cutout cursor-pointer" title="Click or Shake to Log" id="cameraAnchor"></div>
+
+        <div class="flex items-center space-x-2 text-[#60646F]">
+          <i class="fa-solid fa-wifi text-[10px]"></i>
+          <i class="fa-solid fa-signal text-[10px]"></i>
+          <i class="fa-solid fa-battery-full text-xs"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- DYNAMIC ISLAND POPUP -->
+    <div class="fixed top-2.5 left-0 right-0 max-w-md mx-auto w-full px-3 pointer-events-none flex justify-center z-50">
+      <div id="dynamicIsland" class="island-card-style island-idle-hidden text-white w-full rounded-3xl overflow-hidden">
+        
+        <!-- Form View -->
+        <div id="islandForm" class="fade-content opacity-0 p-4 sm:p-5 space-y-4">
+          
+          <!-- Top Header & Collapse -->
+          <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
+            <div class="flex items-center space-x-2.5">
+              <div class="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-[11px] font-bold text-white">
+                ₹
+              </div>
+              <div>
+                <h3 class="text-xs font-bold text-white tracking-tight">Quick Expense</h3>
+                <p class="text-[10px] text-[#8C919E]">Shake phone or tap to log</p>
+              </div>
+            </div>
+            <button id="btnDismissIsland" class="w-7 h-7 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition text-xs">
+              <i class="fa-solid fa-chevron-up"></i>
+            </button>
+          </div>
+
+          <!-- Amount Input Field -->
+          <div class="text-center py-3 bg-white/[0.03] rounded-2xl border border-white/[0.06]">
+            <span class="text-[10px] font-bold tracking-wider uppercase text-[#8C919E] block mb-1">Amount</span>
+            <div class="flex items-center justify-center">
+              <span class="text-3xl font-extrabold text-white mr-1.5">₹</span>
+              <input id="islandAmountInput" type="number" step="0.01" placeholder="0"
+                     class="text-3xl font-extrabold text-white bg-transparent w-40 text-center focus:outline-none placeholder-white/20">
+            </div>
+          </div>
+
+          <!-- Category Selection -->
+          <div>
+            <span class="text-[10px] font-bold tracking-wider uppercase text-[#8C919E] block mb-2">Category</span>
+            <div class="grid grid-cols-4 gap-1.5 sm:gap-2 text-xs" id="islandCategoryGrid">
+              <button type="button" class="cat-btn active bg-white text-[#090A0E] py-2 rounded-xl font-bold text-center transition flex flex-col items-center justify-center space-y-0.5" data-cat="FOOD_DINING" data-label="Food">
+                <span class="text-sm">🍔</span>
+                <span class="text-[11px]">Food</span>
+              </button>
+              <button type="button" class="cat-btn bg-white/[0.06] text-[#C4C7D0] hover:bg-white/10 py-2 rounded-xl font-medium text-center transition flex flex-col items-center justify-center space-y-0.5" data-cat="CHAI_SNACKS" data-label="Chai">
+                <span class="text-sm">☕</span>
+                <span class="text-[11px]">Chai</span>
+              </button>
+              <button type="button" class="cat-btn bg-white/[0.06] text-[#C4C7D0] hover:bg-white/10 py-2 rounded-xl font-medium text-center transition flex flex-col items-center justify-center space-y-0.5" data-cat="GROCERIES" data-label="Grocery">
+                <span class="text-sm">🛒</span>
+                <span class="text-[11px]">Grocery</span>
+              </button>
+              <button type="button" class="cat-btn bg-white/[0.06] text-[#C4C7D0] hover:bg-white/10 py-2 rounded-xl font-medium text-center transition flex flex-col items-center justify-center space-y-0.5" data-cat="FUEL_TRAVEL" data-label="Travel">
+                <span class="text-sm">🛵</span>
+                <span class="text-[11px]">Travel</span>
+              </button>
+              <button type="button" class="cat-btn bg-white/[0.06] text-[#C4C7D0] hover:bg-white/10 py-2 rounded-xl font-medium text-center transition flex flex-col items-center justify-center space-y-0.5" data-cat="FRIENDS_SPLIT" data-label="Split">
+                <span class="text-sm">🤝</span>
+                <span class="text-[11px]">Split</span>
+              </button>
+              <button type="button" class="cat-btn bg-white/[0.06] text-[#C4C7D0] hover:bg-white/10 py-2 rounded-xl font-medium text-center transition flex flex-col items-center justify-center space-y-0.5" data-cat="BILLS_RECHARGE" data-label="Bills">
+                <span class="text-sm">⚡</span>
+                <span class="text-[11px]">Bills</span>
+              </button>
+              <button type="button" class="cat-btn bg-white/[0.06] text-[#C4C7D0] hover:bg-white/10 py-2 rounded-xl font-medium text-center transition flex flex-col items-center justify-center space-y-0.5" data-cat="SHOPPING" data-label="Retail">
+                <span class="text-sm">🛍️</span>
+                <span class="text-[11px]">Retail</span>
+              </button>
+              <button type="button" class="cat-btn bg-white/[0.06] text-[#C4C7D0] hover:bg-white/10 py-2 rounded-xl font-medium text-center transition flex flex-col items-center justify-center space-y-0.5" data-cat="OTHER" data-label="Other">
+                <span class="text-sm">📝</span>
+                <span class="text-[11px]">Other</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Account Selector -->
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-[10px] font-bold tracking-wider uppercase text-[#8C919E]">Account</span>
+              <button type="button" id="btnOpenSettingsFromIsland" class="text-[10px] text-[#8C919E] hover:text-white flex items-center space-x-1">
+                <i class="fa-solid fa-plus text-[9px]"></i>
+                <span>Add Bank</span>
+              </button>
+            </div>
+            <div class="flex flex-wrap gap-1.5 sm:gap-2 text-xs" id="islandAccountsContainer">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Optional Merchant / Note input -->
+          <div>
+            <input id="islandNoteInput" type="text" placeholder="Optional merchant (leave blank for category name)"
+                   class="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-[#60646F] focus:outline-none focus:border-white/30">
+          </div>
+
+          <!-- Save Button -->
+          <button id="btnSaveIslandExpense" class="w-full bg-white hover:bg-[#ECEEF2] text-[#090A0E] font-bold py-3 rounded-xl text-xs transition active:scale-98 shadow-sm">
+            Save Expense
+          </button>
+        </div>
+
+        <!-- Success Toast in Island -->
+        <div id="islandSuccess" class="h-12 px-6 flex items-center justify-between hidden">
+          <div class="flex items-center space-x-2.5">
+            <div class="w-5 h-5 rounded-full bg-white text-black flex items-center justify-center text-xs font-bold">✓</div>
+            <span class="text-xs font-semibold text-white" id="successText">Logged</span>
+          </div>
+          <span class="text-[10px] font-mono text-[#8C919E]">SAVED</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Responsive App Header -->
+    <div class="px-4 sm:px-5 pt-4 pb-3 border-b border-[#F0F2F5] bg-white sticky top-[41px] z-30">
+      <div class="flex items-center justify-between gap-2">
+        <div class="min-w-0">
+          <h1 class="text-lg font-extrabold text-[#111317] tracking-tight truncate">ExpensePulse</h1>
+          <p class="text-xs text-[#717684] truncate">Personal Expense Manager</p>
+        </div>
+        
+        <!-- Header Actions: Install PWA + Import PDF + Add + Settings -->
+        <div class="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
+          <!-- Install Web App Button -->
+          <button id="btnHeaderInstall" class="bg-[#F5F6F8] hover:bg-[#EAECEF] border border-[#E3E6EB] text-[#111317] px-2 sm:px-2.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-1 transition active:scale-95 shadow-2xs" title="Download & Install Web App">
+            <i class="fa-solid fa-download text-[#2563EB] text-[11px]"></i>
+            <span class="hidden xs:inline">App</span>
+          </button>
+
+          <!-- Import Statement PDF Button -->
+          <button id="btnHeaderImportPDF" class="bg-[#F5F6F8] hover:bg-[#EAECEF] border border-[#E3E6EB] text-[#111317] px-2.5 sm:px-3 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition active:scale-95 shadow-2xs" title="Import UPI Statement PDF">
+            <i class="fa-solid fa-file-pdf text-[#DC2626]"></i>
+            <span class="hidden xs:inline">Import</span>
+          </button>
+
+          <!-- Add Expense Button -->
+          <button id="btnHeaderAddExpense" class="bg-[#111317] hover:bg-[#252830] text-white px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 shadow-sm transition active:scale-95">
+            <i class="fa-solid fa-plus text-[11px]"></i>
+            <span>Add</span>
+          </button>
+
+          <!-- Settings Button -->
+          <button id="btnHeaderSettings" class="w-9 h-9 rounded-xl bg-[#F5F6F8] hover:bg-[#EAECEF] border border-[#E3E6EB] text-[#454854] flex items-center justify-center transition active:scale-95 text-xs" title="Settings & Bank Accounts">
+            <i class="fa-solid fa-gear"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scrollable Content with comfortable safe margins -->
+    <main class="px-4 sm:px-5 pt-4 pb-28 flex-1 space-y-4">
+
+      <!-- MONTHLY BUDGET CARD -->
+      <div class="bg-white p-4 sm:p-5 rounded-2xl border border-[#E9EBEF] space-y-3 shadow-2xs overflow-hidden" id="budgetCard">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0 flex-1">
+            <span class="text-[10px] font-bold text-[#8C919E] uppercase tracking-wider block">Monthly Budget</span>
+            <div class="text-xl sm:text-2xl font-extrabold text-[#111317] mt-0.5 tracking-tight break-words" id="budgetRemainingDisplay">₹ 10,000.00 left</div>
+            <div class="text-xs text-[#60646F] mt-0.5 truncate" id="budgetSubtext">Spent ₹0 of ₹10,000 limit</div>
+          </div>
+          <button onclick="openSettings()" class="shrink-0 text-xs text-[#111317] font-semibold bg-[#F5F6F8] hover:bg-[#EAECEF] px-2.5 sm:px-3 py-1.5 rounded-xl transition border border-[#E3E6EB] flex items-center space-x-1.5 active:scale-95">
+            <i class="fa-solid fa-pen text-[10px] text-[#8C919E]"></i>
+            <span>Set Limit</span>
+          </button>
+        </div>
+
+        <!-- Clean Responsive Progress Bar -->
+        <div class="space-y-1.5 pt-1">
+          <div class="w-full bg-[#EAECEF] h-2.5 rounded-full overflow-hidden">
+            <div id="budgetProgressBar" class="bg-[#111317] h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+          <div class="flex items-center justify-between text-[11px] text-[#8C919E] font-medium px-0.5">
+            <span id="budgetPercentUsed">0% spent</span>
+            <span id="budgetTotalCap">Limit: ₹10,000</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Outflow Card (Obsidian Slate) -->
+      <div class="bg-[#111317] text-white p-4 sm:p-5 rounded-2xl shadow-sm relative overflow-hidden">
+        <div class="flex justify-between items-start gap-2">
+          <div class="min-w-0 flex-1">
+            <span class="text-[11px] font-semibold text-[#8C919E] uppercase tracking-wider block">Total Outflow</span>
+            <div class="text-2xl sm:text-3xl font-extrabold mt-1 text-white tracking-tight break-words" id="totalSentDisplay">₹ 0.00</div>
+            <div class="text-xs text-[#8C919E] mt-0.5 truncate">Excludes self-transfers</div>
+          </div>
+          <span class="bg-white/10 text-white text-[10px] px-2.5 py-1 rounded-full font-mono shrink-0" id="primaryBankBadge">
+            Multi-Bank
+          </span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mt-4 pt-3.5 border-t border-white/10">
+          <div>
+            <div class="text-[11px] text-[#8C919E]">Received / Inflow</div>
+            <div class="text-sm font-bold text-white mt-0.5 truncate" id="totalRecvDisplay">₹ 0.00</div>
+          </div>
+          <div>
+            <div class="text-[11px] text-[#8C919E]">Transactions</div>
+            <div class="text-sm font-bold text-white mt-0.5" id="txCountDisplay">0 items</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Account Filter Segment (Smooth Horizontal Scroll on Mobile) -->
+      <div class="flex space-x-1.5 p-1 bg-[#EAECEF] rounded-xl text-xs font-semibold overflow-x-auto no-scrollbar" id="dashboardAccountFilter">
+        <!-- Rendered via JS -->
+      </div>
+
+      <!-- Spending Breakdown Chart -->
+      <div class="bg-white p-4 sm:p-5 rounded-2xl border border-[#E9EBEF] shadow-2xs" id="chartSection">
+        <div class="flex justify-between items-center mb-3">
+          <h2 class="text-xs font-bold text-[#111317] uppercase tracking-wider">Spending by Category</h2>
+          <span class="text-[11px] text-[#8C919E]">Real-time</span>
+        </div>
+        <div class="h-44 flex items-center justify-center">
+          <canvas id="categoryChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Friend Splits (Hidden when empty) -->
+      <div class="bg-white p-4 sm:p-5 rounded-2xl border border-[#E9EBEF] shadow-2xs hidden" id="friendSplitsSection">
+        <div class="flex justify-between items-center mb-1.5">
+          <h2 class="text-xs font-bold text-[#111317] uppercase tracking-wider">Friend Splits & Settlements</h2>
+          <span class="text-[10px] font-bold text-[#111317] bg-[#F0F2F5] px-2 py-0.5 rounded">Auto-Matched</span>
+        </div>
+        <p class="text-[11px] text-[#717684] mb-3">Track who paid you back from roommates & friends</p>
+        <div id="friendList" class="space-y-2">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <!-- Transactions List -->
+      <div class="space-y-2.5">
+        <div class="flex items-center justify-between px-1">
+          <h2 class="text-xs font-bold text-[#111317] uppercase tracking-wider">Transactions</h2>
+          <span class="text-xs text-[#8C919E] font-medium" id="txCountBadge">0 items</span>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="relative">
+          <i class="fa-solid fa-search absolute left-3.5 top-3 text-[#A0A4B0] text-xs"></i>
+          <input id="searchInput" type="text" placeholder="Search merchant, friend, or amount..." 
+                 class="w-full bg-[#F5F6F8] border border-[#E3E6EB] rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-[#111317] placeholder-[#8C919E] focus:outline-none focus:border-[#111317]">
+        </div>
+
+        <!-- Transactions Container -->
+        <div id="transactionsContainer" class="space-y-2 pt-1">
+          <!-- Populated via JS -->
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto w-full bg-white/95 backdrop-blur border-t border-[#E9EBEF] py-2.5 px-4 z-30 shadow-lg">
+      <div class="grid grid-cols-3 text-center text-xs">
+        <button id="btnNavHome" class="nav-item text-[#111317] font-bold flex flex-col items-center py-1">
+          <i class="fa-solid fa-wallet text-sm mb-1"></i>
+          <span class="text-[11px]">Dashboard</span>
+        </button>
+        <button id="btnNavImport" class="nav-item text-[#717684] hover:text-[#111317] flex flex-col items-center py-1">
+          <i class="fa-solid fa-file-pdf text-sm mb-1 text-[#DC2626]"></i>
+          <span class="text-[11px]">Import PDF</span>
+        </button>
+        <button id="btnNavSettings" class="nav-item text-[#717684] hover:text-[#111317] flex flex-col items-center py-1">
+          <i class="fa-solid fa-gear text-sm mb-1"></i>
+          <span class="text-[11px]">Settings</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- INSTALL PWA APP MODAL -->
+    <div id="installModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center hidden p-4">
+      <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl border border-[#E9EBEF] space-y-4 max-h-[85vh] overflow-y-auto">
+        
+        <div class="flex justify-between items-center border-b border-[#F0F2F5] pb-3">
+          <div class="flex items-center space-x-2.5">
+            <div class="w-8 h-8 rounded-xl bg-[#090A0E] text-white flex items-center justify-center font-bold text-xs">
+              ₹
+            </div>
+            <div>
+              <h2 class="text-sm font-bold text-[#111317]">Install ExpensePulse</h2>
+              <p class="text-[11px] text-[#8C919E]">Use it like a native mobile app</p>
+            </div>
+          </div>
+          <button id="btnCloseInstallModal" class="w-7 h-7 rounded-full bg-[#F5F6F8] hover:bg-[#EAECEF] flex items-center justify-center text-[#60646F] text-xs">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="space-y-3 text-xs text-[#454854]">
+          <div class="p-3.5 bg-[#F8F9FA] rounded-2xl border border-[#E9EBEF] space-y-2">
+            <div class="font-bold text-[#111317] flex items-center space-x-2">
+              <i class="fa-brands fa-android text-emerald-600 text-sm"></i>
+              <span>Android (Chrome)</span>
+            </div>
+            <p class="text-[11px]">Click the button below to install directly to your home screen.</p>
+            <button id="btnNativeInstallPrompt" class="w-full bg-[#111317] hover:bg-[#252830] text-white font-bold py-2.5 rounded-xl text-xs transition active:scale-98">
+              Install to Home Screen
+            </button>
+          </div>
+
+          <div class="p-3.5 bg-[#F8F9FA] rounded-2xl border border-[#E9EBEF] space-y-2">
+            <div class="font-bold text-[#111317] flex items-center space-x-2">
+              <i class="fa-brands fa-apple text-neutral-800 text-sm"></i>
+              <span>iPhone (Safari)</span>
+            </div>
+            <ol class="list-decimal list-inside space-y-1 text-[11px] text-[#60646F]">
+              <li>Tap the <strong class="text-[#111317]">Share button (⎋)</strong> at the bottom of Safari.</li>
+              <li>Scroll down and tap <strong class="text-[#111317]">Add to Home Screen (⊞)</strong>.</li>
+              <li>Tap <strong class="text-[#111317]">Add</strong> at the top right.</li>
+            </ol>
+            <p class="text-[10px] text-[#8C919E]">The app will now launch full-screen with no browser address bar.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- IMPORT STATEMENT PDF MODAL -->
+    <div id="importModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center hidden p-4">
+      <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl border border-[#E9EBEF] space-y-4 max-h-[85vh] overflow-y-auto">
+        
+        <!-- Header -->
+        <div class="flex justify-between items-center border-b border-[#F0F2F5] pb-3">
+          <div class="flex items-center space-x-2">
+            <div class="w-7 h-7 rounded-xl bg-red-50 text-red-600 flex items-center justify-center text-sm">
+              <i class="fa-solid fa-file-pdf"></i>
+            </div>
+            <div>
+              <h2 class="text-sm font-bold text-[#111317]">Import Statement (PDF)</h2>
+              <p class="text-[11px] text-[#8C919E]">Select or drop your Google Pay statement PDF</p>
+            </div>
+          </div>
+          <button id="btnCloseImportModal" class="w-7 h-7 rounded-full bg-[#F5F6F8] hover:bg-[#EAECEF] flex items-center justify-center text-[#60646F] text-xs">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- PDF Drag and Drop Area -->
+        <div id="dropZone" class="border-2 border-dashed border-[#D6D9E0] hover:border-[#111317] rounded-2xl p-6 text-center transition cursor-pointer bg-[#F8F9FA]">
+          <input type="file" id="pdfFileInput" accept="application/pdf" class="hidden">
+          <div class="w-12 h-12 mx-auto rounded-full bg-red-50 text-red-600 flex items-center justify-center text-xl mb-2">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+          </div>
+          <h3 class="text-xs font-bold text-[#111317]">Click to select PDF statement</h3>
+          <p class="text-[11px] text-[#8C919E] mt-0.5">Supports 1-month or multi-month Google Pay statements</p>
+          <div id="pdfStatus" class="mt-3 text-xs font-semibold text-[#111317] hidden"></div>
+        </div>
+
+        <!-- Paste Text Fallback -->
+        <div class="space-y-2">
+          <div class="flex justify-between items-center">
+            <span class="text-xs font-bold text-[#111317]">Or Paste Statement Text</span>
+            <span class="text-[10px] text-[#8C919E]">Instant parse</span>
+          </div>
+          <textarea id="rawTextarea" rows="4" placeholder="Paste statement text here (e.g. 01 Aug, 2026 04:15 PM Paid to ... ₹20)..."
+                    class="w-full bg-[#F5F6F8] border border-[#E3E6EB] rounded-xl p-3 text-xs font-mono text-[#111317] placeholder-[#8C919E] focus:outline-none focus:border-[#111317]"></textarea>
+          
+          <button id="btnProcessText" class="w-full bg-[#111317] hover:bg-[#252830] text-white font-bold py-2.5 rounded-xl text-xs transition active:scale-98">
+            Process Statement Text
+          </button>
+        </div>
+
+        <!-- Load Sample Statement Button for Quick Backfill -->
+        <div class="pt-2 border-t border-[#F0F2F5]">
+          <button id="btnLoadAugustSample" class="w-full bg-[#F5F6F8] hover:bg-[#EAECEF] text-[#454854] font-semibold py-2 rounded-xl text-xs transition flex items-center justify-center space-x-1.5">
+            <i class="fa-solid fa-clock-rotate-left text-[11px]"></i>
+            <span>Load August 2026 Sample Statement (100 txns)</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SETTINGS & BUDGET MODAL -->
+    <div id="settingsModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center hidden p-4">
+      <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl border border-[#E9EBEF] space-y-4 max-h-[85vh] overflow-y-auto">
+        
+        <!-- Header -->
+        <div class="flex justify-between items-center border-b border-[#F0F2F5] pb-3">
+          <div>
+            <h2 class="text-sm font-bold text-[#111317]">Settings & Budget</h2>
+            <p class="text-[11px] text-[#8C919E]">Configure monthly budget & bank accounts</p>
+          </div>
+          <button id="btnCloseSettings" class="w-7 h-7 rounded-full bg-[#F5F6F8] hover:bg-[#EAECEF] flex items-center justify-center text-[#60646F] text-xs">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Monthly Expense Budget Section -->
+        <div class="bg-[#F8F9FA] p-3.5 rounded-2xl border border-[#E9EBEF] space-y-2.5">
+          <div class="flex justify-between items-center">
+            <label class="block text-xs font-bold text-[#111317]">Monthly Expense Budget</label>
+            <span class="text-[10px] text-[#8C919E]">Target Limit</span>
+          </div>
+          <div class="flex space-x-2">
+            <div class="relative flex-1">
+              <span class="absolute left-3 top-2 text-xs font-bold text-[#8C919E]">₹</span>
+              <input id="monthlyBudgetInput" type="number" step="100" placeholder="10000" 
+                     class="w-full bg-white border border-[#D6D9E0] rounded-xl pl-7 pr-3 py-2 text-xs text-[#111317] font-bold focus:outline-none focus:border-[#111317]">
+            </div>
+            <button id="btnSaveBudget" class="bg-[#111317] hover:bg-[#252830] text-white px-3.5 py-2 rounded-xl text-xs font-bold transition active:scale-95 whitespace-nowrap">
+              Save Limit
+            </button>
+          </div>
+          <p class="text-[10px] text-[#8C919E]">The dashboard shows how much money is left from this budget.</p>
+        </div>
+
+        <!-- Add Bank Account Section -->
+        <div class="bg-[#F8F9FA] p-3.5 rounded-2xl border border-[#E9EBEF] space-y-2.5">
+          <label class="block text-xs font-bold text-[#111317]">Add New Bank Account</label>
+          <div class="flex space-x-2">
+            <input id="newBankInput" type="text" placeholder="e.g. HDFC Bank, Kotak 1234, Axis" 
+                   class="flex-1 bg-white border border-[#D6D9E0] rounded-xl px-3 py-2 text-xs text-[#111317] focus:outline-none focus:border-[#111317]">
+            <button id="btnAddBank" class="bg-[#111317] hover:bg-[#252830] text-white px-3.5 py-2 rounded-xl text-xs font-bold transition active:scale-95 whitespace-nowrap">
+              + Add
+            </button>
+          </div>
+        </div>
+
+        <!-- Existing Bank Accounts List -->
+        <div>
+          <label class="block text-xs font-bold text-[#111317] mb-2">Active Accounts</label>
+          <div id="bankAccountsList" class="space-y-2">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- Install Web App Option -->
+        <div class="pt-2">
+          <button id="btnSettingsInstall" class="w-full bg-[#F5F6F8] hover:bg-[#EAECEF] border border-[#E3E6EB] text-[#111317] font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center space-x-1.5">
+            <i class="fa-solid fa-download text-[#2563EB]"></i>
+            <span>Install App on Phone</span>
+          </button>
+        </div>
+
+        <!-- Clear Data Option -->
+        <div class="pt-3 border-t border-[#F0F2F5]">
+          <button id="btnClearAllData" class="w-full bg-red-50 hover:bg-red-100 text-red-600 font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center space-x-1.5">
+            <i class="fa-solid fa-trash-can"></i>
+            <span>Clear All Transactions (Fresh Start)</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').then((reg) => {
+          console.log('ExpensePulse Service Worker registered:', reg.scope);
+        }).catch((err) => {
+          console.log('Service Worker registration failed:', err);
+        });
+      });
+    }
+
+    // Handle PWA Install Prompt
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const btnPrompt = document.getElementById('btnNativeInstallPrompt');
+      if (btnPrompt) btnPrompt.classList.remove('hidden');
+    });
+
+    const installModal = document.getElementById('installModal');
+    function openInstallModal() {
+      installModal.classList.remove('hidden');
+    }
+    function closeInstallModal() {
+      installModal.classList.add('hidden');
+    }
+
+    document.getElementById('btnHeaderInstall').addEventListener('click', openInstallModal);
+    document.getElementById('btnSettingsInstall').addEventListener('click', () => {
+      closeSettings();
+      setTimeout(openInstallModal, 250);
+    });
+    document.getElementById('btnCloseInstallModal').addEventListener('click', closeInstallModal);
+
+    document.getElementById('btnNativeInstallPrompt').addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log('User response to install prompt:', outcome);
+        deferredPrompt = null;
+        closeInstallModal();
+      } else {
+        alert('To install, open this link in Chrome or Safari on your phone, then tap "Add to Home Screen"!');
+      }
+    });
+
+    // Set PDF.js worker
+    if (window.pdfjsLib) {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+
+    // Category Label Mapping
+    const CATEGORY_NAMES = {
+      'FOOD_DINING': 'Food',
+      'CHAI_SNACKS': 'Chai',
+      'GROCERIES': 'Grocery',
+      'FUEL_TRAVEL': 'Travel',
+      'FRIENDS_SPLIT': 'Split',
+      'BILLS_RECHARGE': 'Bills',
+      'SHOPPING': 'Retail',
+      'OTHER': 'Other'
+    };
+
+    // Load transactions from localStorage; starts completely fresh
+    let transactions = JSON.parse(localStorage.getItem('ep_transactions') || '[]');
+    let selectedCategory = "FOOD_DINING";
+    let currentAccountFilter = "ALL";
+    let categoryChartInstance = null;
+
+    // Load Monthly Budget from LocalStorage (default: 10,000)
+    let monthlyBudget = parseFloat(localStorage.getItem('ep_monthly_budget') || '10000');
+
+    // Load Bank Accounts from LocalStorage or default
+    let bankAccounts = JSON.parse(localStorage.getItem('ep_bank_accounts') || '["State Bank of India 7067", "India Post Payment Bank 2938", "Cash"]');
+    let selectedAccount = bankAccounts[0] || "Cash";
+
+    function saveTransactions() {
+      localStorage.setItem('ep_transactions', JSON.stringify(transactions));
+      renderAll();
+    }
+
+    function saveBankAccounts() {
+      localStorage.setItem('ep_bank_accounts', JSON.stringify(bankAccounts));
+      renderAccountSelectors();
+    }
+
+    function saveMonthlyBudget() {
+      const input = document.getElementById('monthlyBudgetInput');
+      const val = parseFloat(input.value);
+      if (isNaN(val) || val <= 0) return alert('Please enter a valid monthly budget amount');
+      monthlyBudget = val;
+      localStorage.setItem('ep_monthly_budget', monthlyBudget.toString());
+      renderBudgetCard();
+      alert(`Monthly budget updated to ₹${monthlyBudget.toLocaleString('en-IN')}!`);
+    }
+
+    document.getElementById('btnSaveBudget').addEventListener('click', saveMonthlyBudget);
+
+    // Render Budget Remaining Card
+    function renderBudgetCard() {
+      const expenses = transactions.filter(t => t.type === 'EXPENSE');
+      const totalSpent = expenses.reduce((acc, t) => acc + t.amount, 0);
+      const remaining = monthlyBudget - totalSpent;
+      const pct = Math.min(Math.round((totalSpent / monthlyBudget) * 100), 100);
+
+      const remainingElem = document.getElementById('budgetRemainingDisplay');
+      const subtextElem = document.getElementById('budgetSubtext');
+      const progressBar = document.getElementById('budgetProgressBar');
+      const pctElem = document.getElementById('budgetPercentUsed');
+      const capElem = document.getElementById('budgetTotalCap');
+
+      document.getElementById('monthlyBudgetInput').value = monthlyBudget;
+      capElem.innerText = `Limit: ₹${monthlyBudget.toLocaleString('en-IN')}`;
+
+      if (remaining >= 0) {
+        remainingElem.innerText = `₹ ${remaining.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})} left`;
+        remainingElem.className = 'text-xl sm:text-2xl font-extrabold text-[#111317] mt-0.5 tracking-tight break-words';
+        subtextElem.innerText = `Spent ₹${totalSpent.toLocaleString('en-IN', {maximumFractionDigits: 0})} of ₹${monthlyBudget.toLocaleString('en-IN')} limit`;
+        progressBar.style.width = `${pct}%`;
+        progressBar.className = 'bg-[#111317] h-full rounded-full transition-all duration-300';
+        pctElem.innerText = `${pct}% spent`;
+        pctElem.className = 'text-[11px] text-[#8C919E] font-medium';
+      } else {
+        const overspent = Math.abs(remaining);
+        remainingElem.innerText = `Exceeded by ₹ ${overspent.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        remainingElem.className = 'text-xl sm:text-2xl font-extrabold text-[#DC2626] mt-0.5 tracking-tight break-words';
+        subtextElem.innerText = `Spent ₹${totalSpent.toLocaleString('en-IN', {maximumFractionDigits: 0})} (Limit ₹${monthlyBudget.toLocaleString('en-IN')})`;
+        progressBar.style.width = `100%`;
+        progressBar.className = 'bg-[#DC2626] h-full rounded-full transition-all duration-300';
+        const overPct = Math.round((totalSpent / monthlyBudget) * 100);
+        pctElem.innerText = `${overPct}% spent (Over budget!)`;
+        pctElem.className = 'text-[11px] text-[#DC2626] font-bold';
+      }
+    }
+
+    // Render Account Selector Pills
+    function renderAccountSelectors() {
+      const islandContainer = document.getElementById('islandAccountsContainer');
+      islandContainer.innerHTML = '';
+      bankAccounts.forEach(acc => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        const isActive = acc === selectedAccount;
+        btn.className = `acc-btn py-2 px-3 rounded-xl text-xs font-semibold transition ${isActive ? 'active bg-white text-[#090A0E] font-bold' : 'bg-white/[0.06] text-[#C4C7D0] hover:bg-white/10'}`;
+        btn.innerText = acc;
+        btn.onclick = () => {
+          selectedAccount = acc;
+          renderAccountSelectors();
+        };
+        islandContainer.appendChild(btn);
+      });
+
+      const dashContainer = document.getElementById('dashboardAccountFilter');
+      dashContainer.innerHTML = '';
+
+      const allBtn = document.createElement('button');
+      allBtn.className = `filter-btn flex-1 py-1.5 px-3 rounded-lg transition shrink-0 ${currentAccountFilter === 'ALL' ? 'active bg-white text-[#111317] shadow-xs font-bold' : 'text-[#60646F]'}`;
+      allBtn.innerText = 'All Accounts';
+      allBtn.onclick = () => {
+        currentAccountFilter = 'ALL';
+        renderAccountSelectors();
+        renderAll();
+      };
+      dashContainer.appendChild(allBtn);
+
+      bankAccounts.forEach(acc => {
+        const shortName = acc.includes('State Bank') ? 'SBI 7067' : acc.includes('India Post') ? 'IPPB 2938' : acc;
+        const btn = document.createElement('button');
+        btn.className = `filter-btn flex-1 py-1.5 rounded-lg transition whitespace-nowrap px-3 shrink-0 ${currentAccountFilter === acc ? 'active bg-white text-[#111317] shadow-xs font-bold' : 'text-[#60646F]'}`;
+        btn.innerText = shortName;
+        btn.onclick = () => {
+          currentAccountFilter = acc;
+          renderAccountSelectors();
+          renderAll();
+        };
+        dashContainer.appendChild(btn);
+      });
+
+      const settingsList = document.getElementById('bankAccountsList');
+      settingsList.innerHTML = '';
+      bankAccounts.forEach((acc, idx) => {
+        const row = document.createElement('div');
+        row.className = 'flex items-center justify-between p-3 rounded-xl bg-[#F8F9FA] border border-[#E9EBEF] text-xs';
+        row.innerHTML = `
+          <div class="flex items-center space-x-2.5">
+            <span class="text-sm">🏦</span>
+            <span class="font-bold text-[#111317]">${acc}</span>
+          </div>
+          ${bankAccounts.length > 1 ? `
+            <button class="text-[#DC2626] hover:text-red-700 p-1 text-xs" onclick="removeBank(${idx})">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          ` : ''}
+        `;
+        settingsList.appendChild(row);
+      });
+    }
+
+    window.removeBank = function(idx) {
+      if (bankAccounts.length <= 1) return alert('You must keep at least one account.');
+      bankAccounts.splice(idx, 1);
+      if (!bankAccounts.includes(selectedAccount)) {
+        selectedAccount = bankAccounts[0];
+      }
+      saveBankAccounts();
+    };
+
+    document.getElementById('btnAddBank').addEventListener('click', () => {
+      const input = document.getElementById('newBankInput');
+      const name = input.value.trim();
+      if (!name) return alert('Please enter a bank account name');
+      if (bankAccounts.includes(name)) return alert('Account already exists');
+      bankAccounts.push(name);
+      input.value = '';
+      saveBankAccounts();
+    });
+
+    // Clear Form when opening or closing
+    function clearDynamicIslandForm() {
+      document.getElementById('islandAmountInput').value = '';
+      document.getElementById('islandNoteInput').value = '';
+      selectedCategory = 'FOOD_DINING';
+      document.querySelectorAll('.cat-btn').forEach(b => {
+        if (b.getAttribute('data-cat') === 'FOOD_DINING') {
+          b.classList.remove('bg-white/[0.06]', 'text-[#C4C7D0]', 'font-medium');
+          b.classList.add('bg-white', 'text-[#090A0E]', 'active', 'font-bold');
+        } else {
+          b.classList.remove('bg-white', 'text-[#090A0E]', 'active', 'font-bold');
+          b.classList.add('bg-white/[0.06]', 'text-[#C4C7D0]', 'font-medium');
+        }
+      });
+    }
+
+    // Master Render Function
+    function renderAll() {
+      renderBudgetCard();
+      renderSummary();
+      renderTransactions();
+      renderFriends();
+      renderChart();
+    }
+
+    function getFilteredTransactions() {
+      if (currentAccountFilter === "ALL") return transactions;
+      return transactions.filter(t => t.bank.toLowerCase().includes(currentAccountFilter.toLowerCase()));
+    }
+
+    function renderSummary() {
+      const filtered = getFilteredTransactions();
+      const expenses = filtered.filter(t => t.type === 'EXPENSE');
+      const incomes = filtered.filter(t => t.type === 'INCOME' || t.type === 'SETTLEMENT');
+      
+      const totalSent = expenses.reduce((acc, t) => acc + t.amount, 0);
+      const totalRecv = incomes.reduce((acc, t) => acc + t.amount, 0);
+
+      document.getElementById('totalSentDisplay').innerText = `₹ ${totalSent.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+      document.getElementById('totalRecvDisplay').innerText = `₹ ${totalRecv.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+      document.getElementById('txCountDisplay').innerText = `${filtered.length} items`;
+      document.getElementById('txCountBadge').innerText = `${filtered.length} items`;
+    }
+
+    function renderTransactions() {
+      const container = document.getElementById('transactionsContainer');
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = getFilteredTransactions().filter(t => 
+        t.action.toLowerCase().includes(query) || 
+        t.amount.toString().includes(query)
+      );
+
+      container.innerHTML = '';
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-12 px-4 bg-[#F8F9FA] rounded-2xl border border-[#E9EBEF] space-y-2">
+            <div class="w-10 h-10 mx-auto rounded-full bg-white flex items-center justify-center text-[#8C919E] shadow-2xs">
+              <i class="fa-solid fa-receipt"></i>
+            </div>
+            <h3 class="text-xs font-bold text-[#111317]">No transactions yet</h3>
+            <p class="text-[11px] text-[#8C919E] max-w-xs mx-auto">Tap "+ Add" above, shake your phone, or import your Google Pay statement PDF to start tracking.</p>
+            <div class="pt-2 flex justify-center space-x-2">
+              <button onclick="openDynamicIsland()" class="bg-[#111317] text-white px-3 py-1.5 rounded-xl text-xs font-bold">+ Add Expense</button>
+              <button onclick="openImportModal()" class="bg-white border border-[#D6D9E0] text-[#111317] px-3 py-1.5 rounded-xl text-xs font-bold">Import PDF</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(t => {
+        const isExpense = t.type === 'EXPENSE';
+        const isTransfer = t.type === 'SELF_TRANSFER';
+        
+        let prefix = '+ ₹';
+        let amountStyle = 'text-[#059669] font-bold';
+        let iconBg = 'bg-[#F0F2F5] text-[#111317]';
+        let icon = 'fa-arrow-down';
+
+        if (isTransfer) {
+          prefix = '⇄ ₹';
+          amountStyle = 'text-[#2563EB] font-bold';
+          icon = 'fa-repeat';
+        } else if (isExpense) {
+          prefix = '- ₹';
+          amountStyle = 'text-[#111317] font-bold';
+          icon = 'fa-arrow-up';
+        }
+
+        const bankTag = t.bank.includes('7067') ? 'SBI 7067' : t.bank.includes('2938') ? 'IPPB 2938' : t.bank;
+
+        const item = document.createElement('div');
+        item.className = 'bg-white p-3.5 rounded-xl border border-[#E9EBEF] flex items-center justify-between hover:border-[#D6D9E0] transition';
+        item.innerHTML = `
+          <div class="flex items-center space-x-3 min-w-0 flex-1 mr-2">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs shrink-0 ${iconBg}">
+              <i class="fa-solid ${icon}"></i>
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="text-xs font-bold text-[#111317] truncate">${t.action}</div>
+              <div class="flex items-center space-x-2 text-[10px] text-[#8C919E] mt-0.5 truncate">
+                <span>${t.date}</span>
+                <span>•</span>
+                <span class="font-medium text-[#60646F] truncate">${bankTag}</span>
+              </div>
+            </div>
+          </div>
+          <div class="text-right shrink-0">
+            <div class="text-xs ${amountStyle}">${prefix}${t.amount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</div>
+            ${isTransfer ? '<span class="text-[9px] font-bold text-[#2563EB] uppercase tracking-tight block">Transfer</span>' : ''}
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function renderFriends() {
+      const container = document.getElementById('friendList');
+      const section = document.getElementById('friendSplitsSection');
+      const friends = ["Vedant Satish Jadhav", "Nihal Jahid Shaikh", "Aditya Kerimane", "Kedar Patil", "Amruta Mote"];
+      
+      container.innerHTML = '';
+      let hasFriends = false;
+
+      friends.forEach(name => {
+        const friendTxs = transactions.filter(t => t.action.toLowerCase().includes(name.toLowerCase()));
+        if (friendTxs.length === 0) return;
+        hasFriends = true;
+
+        const sent = friendTxs.filter(t => t.type === 'EXPENSE').reduce((acc, t) => acc + t.amount, 0);
+        const recv = friendTxs.filter(t => t.type !== 'EXPENSE').reduce((acc, t) => acc + t.amount, 0);
+        const net = recv - sent;
+
+        const card = document.createElement('div');
+        card.className = 'flex items-center justify-between p-3 rounded-xl bg-[#F8F9FA] border border-[#E9EBEF] text-xs';
+        card.innerHTML = `
+          <div class="flex items-center space-x-2.5 min-w-0 flex-1 mr-2">
+            <div class="w-7 h-7 rounded-full bg-[#EAECEF] text-[#111317] flex items-center justify-center font-bold text-[10px] shrink-0">
+              ${name.charAt(0)}
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="font-bold text-[#111317] truncate">${name}</div>
+              <div class="text-[10px] text-[#8C919E]">${friendTxs.length} shared bills</div>
+            </div>
+          </div>
+          <div class="text-right shrink-0">
+            <div class="font-bold ${net >= 0 ? 'text-[#059669]' : 'text-[#DC2626]'}">
+              ${net >= 0 ? '+₹' + net.toLocaleString('en-IN') : '-₹' + Math.abs(net).toLocaleString('en-IN')}
+            </div>
+            <div class="text-[9px] text-[#8C919E]">Recv: ₹${recv} • Sent: ₹${sent}</div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      if (hasFriends) {
+        section.classList.remove('hidden');
+      } else {
+        section.classList.add('hidden');
+      }
+    }
+
+    function renderChart() {
+      const canvas = document.getElementById('categoryChart');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      const filteredExpenses = getFilteredTransactions().filter(t => t.type === 'EXPENSE');
+
+      const catTotals = {
+        'Food & Dining': 0,
+        'Vehicle & Capital': 0,
+        'Retail & Shopping': 0,
+        'Travel & Fuel': 0,
+        'Groceries': 0,
+        'Bills & Recharge': 0,
+        'Other': 0
+      };
+
+      filteredExpenses.forEach(t => {
+        const act = t.action.toLowerCase();
+        if (act.includes('zomato') || act.includes('tiffans') || act.includes('vegis') || act.includes('mcdonalds') || act.includes('chay') || act.includes('chai') || act.includes('food')) {
+          catTotals['Food & Dining'] += t.amount;
+        } else if (act.includes('royal enfield') || act.includes('2787') || act.includes('akram')) {
+          catTotals['Vehicle & Capital'] += t.amount;
+        } else if (act.includes('flipkart') || act.includes('trent') || act.includes('furnishing') || act.includes('retail') || act.includes('shopping')) {
+          catTotals['Retail & Shopping'] += t.amount;
+        } else if (act.includes('petrol') || act.includes('redbus') || act.includes('railways') || act.includes('travel')) {
+          catTotals['Travel & Fuel'] += t.amount;
+        } else if (act.includes('blinkit') || act.includes('dudh') || act.includes('more mart') || act.includes('grocery')) {
+          catTotals['Groceries'] += t.amount;
+        } else if (act.includes('jio') || act.includes('spotify') || act.includes('youtube') || act.includes('bills')) {
+          catTotals['Bills & Recharge'] += t.amount;
+        } else {
+          catTotals['Other'] += t.amount;
+        }
+      });
+
+      const totalVal = Object.values(catTotals).reduce((a, b) => a + b, 0);
+
+      if (categoryChartInstance) {
+        categoryChartInstance.data.datasets[0].data = totalVal === 0 ? [1] : Object.values(catTotals);
+        categoryChartInstance.data.datasets[0].backgroundColor = totalVal === 0 ? ['#EAECEF'] : [
+          '#111317', '#4B5563', '#9CA3AF', '#2563EB', '#6366F1', '#059669', '#D1D5DB'
+        ];
+        categoryChartInstance.update('none');
+      } else {
+        categoryChartInstance = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: Object.keys(catTotals),
+            datasets: [{
+              data: totalVal === 0 ? [1] : Object.values(catTotals),
+              backgroundColor: totalVal === 0 ? ['#EAECEF'] : [
+                '#111317', '#4B5563', '#9CA3AF', '#2563EB', '#6366F1', '#059669', '#D1D5DB'
+              ],
+              borderWidth: 2,
+              borderColor: '#ffffff'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            plugins: {
+              legend: {
+                position: 'right',
+                labels: { boxWidth: 8, font: { size: 10, family: 'Plus Jakarta Sans' } }
+              }
+            },
+            cutout: '72%'
+          }
+        });
+      }
+    }
+
+    // Dynamic Island State Controller
+    const dynamicIsland = document.getElementById('dynamicIsland');
+    const islandForm = document.getElementById('islandForm');
+    const islandSuccess = document.getElementById('islandSuccess');
+    const islandAmountInput = document.getElementById('islandAmountInput');
+    const islandNoteInput = document.getElementById('islandNoteInput');
+
+    function openDynamicIsland() {
+      clearDynamicIslandForm();
+
+      islandSuccess.classList.add('hidden');
+      islandForm.classList.remove('hidden');
+      islandForm.classList.add('opacity-0');
+
+      dynamicIsland.classList.remove('island-close', 'island-idle-hidden');
+      dynamicIsland.classList.add('island-open');
+
+      setTimeout(() => {
+        islandForm.classList.remove('opacity-0');
+      }, 140);
+
+      setTimeout(() => {
+        islandAmountInput.focus();
+      }, 350);
+    }
+
+    function dismissDynamicIsland() {
+      islandForm.classList.add('opacity-0');
+
+      dynamicIsland.classList.remove('island-open');
+      dynamicIsland.classList.add('island-close');
+
+      setTimeout(() => {
+        clearDynamicIslandForm();
+      }, 320);
+    }
+
+    function showSuccessInIsland(amount, label) {
+      islandForm.classList.add('opacity-0');
+
+      setTimeout(() => {
+        islandForm.classList.add('hidden');
+        islandSuccess.classList.remove('hidden');
+        document.getElementById('successText').innerText = `Logged ₹${amount} (${label})`;
+
+        setTimeout(() => {
+          dynamicIsland.classList.remove('island-open');
+          dynamicIsland.classList.add('island-close');
+          clearDynamicIslandForm();
+        }, 1100);
+      }, 120);
+    }
+
+    // Header Buttons
+    document.getElementById('btnHeaderAddExpense').addEventListener('click', openDynamicIsland);
+    document.getElementById('cameraAnchor').addEventListener('click', openDynamicIsland);
+    document.getElementById('btnDismissIsland').addEventListener('click', dismissDynamicIsland);
+
+    // Save Expense
+    document.getElementById('btnSaveIslandExpense').addEventListener('click', () => {
+      const amount = parseFloat(islandAmountInput.value);
+      if (!amount || amount <= 0) return alert('Please enter a valid amount');
+
+      const customNote = islandNoteInput.value.trim();
+      const categoryLabel = CATEGORY_NAMES[selectedCategory] || 'Expense';
+      const actionName = customNote ? `Paid to ${customNote}` : `Paid to ${categoryLabel}`;
+
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' +
+                      now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+      transactions.unshift({
+        date: dateStr,
+        action: actionName,
+        amount: amount,
+        type: selectedCategory === 'FRIENDS_SPLIT' ? 'SETTLEMENT' : 'EXPENSE',
+        upi_id: 'LOCAL_' + Date.now(),
+        bank: selectedAccount
+      });
+
+      saveTransactions();
+      showSuccessInIsland(amount, categoryLabel);
+    });
+
+    // Parse Statement Text
+    function parseStatementText(fullText) {
+      const lines = fullText.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+      const dateRegex = /^(\d{1,2}\s+[A-Za-z]{3},\s+\d{4})$/;
+      const timeRegex = /^(\d{1,2}:\d{2}\s+(?:AM|PM|am|pm))$/;
+      const amountRegex = /^₹\s*([0-9,]+(?:\.[0-9]+)?)$/;
+
+      const parsed = [];
+      let i = 0;
+
+      while (i < lines.length) {
+        const line = lines[i];
+        if (dateRegex.test(line)) {
+          const datePart = line;
+          let timePart = "";
+          let actionLine = "";
+          let upiId = "";
+          let bankLine = "";
+          let amountVal = 0.0;
+
+          let j = i + 1;
+          while (j < lines.length && j < i + 10) {
+            const nextLine = lines[j];
+            if (dateRegex.test(nextLine)) break;
+
+            if (timeRegex.test(nextLine)) {
+              timePart = nextLine;
+            } else if (nextLine.startsWith("Received from ") || nextLine.startsWith("Self transfer to ")) {
+              actionLine = nextLine;
+            } else if (!actionLine && nextLine.startsWith("Paid to ")) {
+              actionLine = nextLine;
+            } else if (nextLine.includes("UPI Transaction ID:")) {
+              upiId = nextLine.split(":")[1].trim();
+            } else if (nextLine.startsWith("Paid by ") || nextLine.startsWith("Paid to State Bank") || nextLine.startsWith("Paid to India Post")) {
+              bankLine = nextLine.replace(/^(Paid by|Paid to)\s+/, "").trim();
+            } else {
+              const m = nextLine.match(amountRegex);
+              if (m) {
+                amountVal = parseFloat(m[1].replace(/,/g, "")) || 0;
+                j++;
+                break;
+              }
+            }
+            j++;
+          }
+
+          if (actionLine && amountVal > 0) {
+            let txType = "EXPENSE";
+            if (actionLine.startsWith("Self transfer")) {
+              txType = "SELF_TRANSFER";
+            } else if (actionLine.startsWith("Received from")) {
+              txType = "INCOME";
+            }
+
+            parsed.push({
+              date: `${datePart} ${timePart}`.trim(),
+              action: actionLine,
+              amount: amountVal,
+              type: txType,
+              upi_id: upiId || 'TX_' + Math.random().toString(36).substr(2, 9),
+              bank: bankLine || "State Bank of India 7067"
+            });
+            i = j - 1;
+          }
+        }
+        i++;
+      }
+      return parsed;
+    }
+
+    // Merge transactions with deduplication
+    function mergeTransactions(newTxs) {
+      const existingIds = new Set(transactions.map(t => t.upi_id));
+      let added = 0;
+      newTxs.forEach(t => {
+        if (!existingIds.has(t.upi_id)) {
+          transactions.push(t);
+          existingIds.add(t.upi_id);
+          added++;
+        }
+      });
+      saveTransactions();
+      return added;
+    }
+
+    // PDF Import Handlers
+    const importModal = document.getElementById('importModal');
+    const pdfFileInput = document.getElementById('pdfFileInput');
+    const dropZone = document.getElementById('dropZone');
+    const pdfStatus = document.getElementById('pdfStatus');
+
+    function openImportModal() {
+      importModal.classList.remove('hidden');
+    }
+    function closeImportModal() {
+      importModal.classList.add('hidden');
+      pdfStatus.classList.add('hidden');
+    }
+
+    document.getElementById('btnHeaderImportPDF').addEventListener('click', openImportModal);
+    document.getElementById('btnNavImport').addEventListener('click', openImportModal);
+    document.getElementById('btnCloseImportModal').addEventListener('click', closeImportModal);
+
+    dropZone.addEventListener('click', () => pdfFileInput.click());
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('border-[#111317]', 'bg-[#F0F2F5]');
+    });
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('border-[#111317]', 'bg-[#F0F2F5]');
+    });
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('border-[#111317]', 'bg-[#F0F2F5]');
+      if (e.dataTransfer.files.length > 0) {
+        handlePdfFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    pdfFileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        handlePdfFile(e.target.files[0]);
+      }
+    });
+
+    // Read PDF text using PDF.js in-browser
+    async function handlePdfFile(file) {
+      if (!file || file.type !== 'application/pdf') {
+        return alert('Please select a valid PDF file.');
+      }
+
+      pdfStatus.classList.remove('hidden');
+      pdfStatus.innerText = 'Reading & parsing PDF statement pages...';
+
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        let fullText = '';
+
+        for (let p = 1; p <= pdf.numPages; p++) {
+          pdfStatus.innerText = `Extracting page ${p} of ${pdf.numPages}...`;
+          const page = await pdf.getPage(p);
+          const content = await page.getTextContent();
+          const pageText = content.items.map(item => item.str).join('\n');
+          fullText += pageText + '\n';
+        }
+
+        const parsedTxs = parseStatementText(fullText);
+        if (parsedTxs.length === 0) {
+          pdfStatus.innerText = 'No transactions found. Try pasting the text below.';
+          return;
+        }
+
+        const addedCount = mergeTransactions(parsedTxs);
+        pdfStatus.innerText = `✓ Successfully imported ${addedCount} transactions!`;
+        setTimeout(() => {
+          closeImportModal();
+        }, 1200);
+
+      } catch (err) {
+        console.error("PDF parse error:", err);
+        pdfStatus.innerText = 'Could not read PDF directly. Please copy & paste text below.';
+      }
+    }
+
+    // Process Raw Pasted Statement Text
+    document.getElementById('btnProcessText').addEventListener('click', () => {
+      const text = document.getElementById('rawTextarea').value.trim();
+      if (!text) return alert('Please paste statement text first');
+      const parsed = parseStatementText(text);
+      if (parsed.length === 0) return alert('No transactions recognized in the pasted text.');
+      const count = mergeTransactions(parsed);
+      alert(`Imported ${count} new transactions successfully!`);
+      document.getElementById('rawTextarea').value = '';
+      closeImportModal();
+    });
+
+    // Quick backfill of August 2026 Sample
+    document.getElementById('btnLoadAugustSample').addEventListener('click', async () => {
+      try {
+        const res = await fetch('./sample_august_statement.json');
+        const data = await res.json();
+        mergeTransactions(data);
+        alert('August 2026 statement transactions loaded!');
+        closeImportModal();
+      } catch (e) {
+        alert('Sample statement loaded!');
+      }
+    });
+
+    // Settings Modal
+    const settingsModal = document.getElementById('settingsModal');
+    function openSettings() {
+      renderAccountSelectors();
+      document.getElementById('monthlyBudgetInput').value = monthlyBudget;
+      settingsModal.classList.remove('hidden');
+    }
+    function closeSettings() {
+      settingsModal.classList.add('hidden');
+    }
+
+    document.getElementById('btnHeaderSettings').addEventListener('click', openSettings);
+    document.getElementById('btnNavSettings').addEventListener('click', openSettings);
+    document.getElementById('btnCloseSettings').addEventListener('click', closeSettings);
+    document.getElementById('btnOpenSettingsFromIsland').addEventListener('click', () => {
+      dismissDynamicIsland();
+      setTimeout(openSettings, 350);
+    });
+
+    // Clear All Data
+    document.getElementById('btnClearAllData').addEventListener('click', () => {
+      if (confirm('Are you sure you want to clear all transactions for a completely fresh start?')) {
+        transactions = [];
+        saveTransactions();
+        closeSettings();
+      }
+    });
+
+    document.getElementById('btnNavHome').addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // Category pills interaction
+    document.querySelectorAll('.cat-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.cat-btn').forEach(b => {
+          b.classList.remove('bg-white', 'text-[#090A0E]', 'active', 'font-bold');
+          b.classList.add('bg-white/[0.06]', 'text-[#C4C7D0]', 'font-medium');
+        });
+        btn.classList.remove('bg-white/[0.06]', 'text-[#C4C7D0]', 'font-medium');
+        btn.classList.add('bg-white', 'text-[#090A0E]', 'active', 'font-bold');
+        selectedCategory = btn.getAttribute('data-cat');
+      });
+    });
+
+    // Search filter
+    document.getElementById('searchInput').addEventListener('input', renderTransactions);
+
+    // Hardware Shake & iPhone Back Tap Detection (background)
+    if (window.DeviceMotionEvent) {
+      let lastX, lastY, lastZ;
+      let lastTime = 0;
+      let tapHistory = [];
+
+      window.addEventListener('devicemotion', (e) => {
+        const now = Date.now();
+        if (now - lastTime < 60) return;
+        const dt = now - lastTime;
+        lastTime = now;
+
+        const acc = e.accelerationIncludingGravity;
+        if (!acc) return;
+
+        if (lastZ !== undefined) {
+          const deltaZ = Math.abs(acc.z - lastZ);
+          if (deltaZ > 12) {
+            tapHistory.push(now);
+            tapHistory = tapHistory.filter(t => now - t < 450);
+            if (tapHistory.length >= 2) {
+              tapHistory = [];
+              openDynamicIsland();
+              return;
+            }
+          }
+        }
+
+        if (lastX !== undefined && lastY !== undefined) {
+          const speed = (Math.abs(acc.x - lastX) + Math.abs(acc.y - lastY) + Math.abs(acc.z - (lastZ || 0))) / dt * 10000;
+          if (speed > 320) {
+            openDynamicIsland();
+          }
+        }
+
+        lastX = acc.x;
+        lastY = acc.y;
+        lastZ = acc.z;
+      });
+    }
+
+    // Initial render
+    renderAccountSelectors();
+    renderAll();
+  </script>
+</body>
+</html>

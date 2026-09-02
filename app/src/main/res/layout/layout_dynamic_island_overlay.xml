@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/island_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    android:gravity="top|center_horizontal">
+
+    <!-- The Dynamic Island Container (Jet Black OLED Capsule) -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/card_dynamic_island"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="8dp"
+        app:cardBackgroundColor="#090A0E"
+        app:cardCornerRadius="26dp"
+        app:cardElevation="24dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Compact Success / Pill State (Visible only momentarily on save) -->
+            <LinearLayout
+                android:id="@+id/layout_island_compact"
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="18dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/tv_island_pill_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="✓"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_island_pill_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="Saved Expense"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_island_pill_amount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text=""
+                    android:textColor="#8C919E"
+                    android:textSize="12sp"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <!-- Expanded Island State (Emerges directly from Camera Cutout on Shake or Back Tap) -->
+            <LinearLayout
+                android:id="@+id/layout_island_expanded"
+                android:layout_width="340dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp"
+                android:visibility="visible">
+
+                <!-- Header & Collapse Button -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Quick Expense"
+                        android:textColor="#FFFFFF"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <ImageButton
+                        android:id="@+id/btn_island_collapse"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:background="?android:attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="Collapse"
+                        android:src="@android:drawable/arrow_up_float"
+                        app:tint="#8C919E" />
+                </LinearLayout>
+
+                <!-- Amount Input -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:background="@drawable/bg_dark_input"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:paddingVertical="10dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="₹ "
+                        android:textColor="#FFFFFF"
+                        android:textSize="28sp"
+                        android:textStyle="bold" />
+
+                    <EditText
+                        android:id="@+id/et_island_amount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@null"
+                        android:hint="0"
+                        android:inputType="numberDecimal"
+                        android:minWidth="80dp"
+                        android:textColor="#FFFFFF"
+                        android:textColorHint="#454854"
+                        android:textSize="28sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- Category Section -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:text="CATEGORY"
+                    android:textColor="#8C919E"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:scrollbars="none">
+
+                    <RadioGroup
+                        android:id="@+id/rg_island_categories"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <RadioButton
+                            android:id="@+id/rb_island_food"
+                            android:layout_width="wrap_content"
+                            android:layout_height="34dp"
+                            android:layout_marginEnd="6dp"
+                            android:background="@drawable/chip_dark_selector"
+                            android:button="@null"
+                            android:checked="true"
+                            android:paddingHorizontal="14dp"
+                            android:text="🍔 Food"
+                            android:textColor="@drawable/chip_text_selector"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                        <RadioButton
+                            android:id="@+id/rb_island_chai"
+                            android:layout_width="wrap_content"
+                            android:layout_height="34dp"
+                            android:layout_marginEnd="6dp"
+                            android:background="@drawable/chip_dark_selector"
+                            android:button="@null"
+                            android:paddingHorizontal="14dp"
+                            android:text="☕ Chai"
+                            android:textColor="@drawable/chip_text_selector"
+                            android:textSize="12sp" />
+
+                        <RadioButton
+                            android:id="@+id/rb_island_groceries"
+                            android:layout_width="wrap_content"
+                            android:layout_height="34dp"
+                            android:layout_marginEnd="6dp"
+                            android:background="@drawable/chip_dark_selector"
+                            android:button="@null"
+                            android:paddingHorizontal="14dp"
+                            android:text="🛒 Grocery"
+                            android:textColor="@drawable/chip_text_selector"
+                            android:textSize="12sp" />
+
+                        <RadioButton
+                            android:id="@+id/rb_island_travel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="34dp"
+                            android:layout_marginEnd="6dp"
+                            android:background="@drawable/chip_dark_selector"
+                            android:button="@null"
+                            android:paddingHorizontal="14dp"
+                            android:text="🛵 Travel"
+                            android:textColor="@drawable/chip_text_selector"
+                            android:textSize="12sp" />
+
+                        <RadioButton
+                            android:id="@+id/rb_island_split"
+                            android:layout_width="wrap_content"
+                            android:layout_height="34dp"
+                            android:layout_marginEnd="6dp"
+                            android:background="@drawable/chip_dark_selector"
+                            android:button="@null"
+                            android:paddingHorizontal="14dp"
+                            android:text="🤝 Split"
+                            android:textColor="@drawable/chip_text_selector"
+                            android:textSize="12sp" />
+
+                        <RadioButton
+                            android:id="@+id/rb_island_bills"
+                            android:layout_width="wrap_content"
+                            android:layout_height="34dp"
+                            android:layout_marginEnd="6dp"
+                            android:background="@drawable/chip_dark_selector"
+                            android:button="@null"
+                            android:paddingHorizontal="14dp"
+                            android:text="⚡ Bills"
+                            android:textColor="@drawable/chip_text_selector"
+                            android:textSize="12sp" />
+
+                        <RadioButton
+                            android:id="@+id/rb_island_other"
+                            android:layout_width="wrap_content"
+                            android:layout_height="34dp"
+                            android:background="@drawable/chip_dark_selector"
+                            android:button="@null"
+                            android:paddingHorizontal="14dp"
+                            android:text="📝 Other"
+                            android:textColor="@drawable/chip_text_selector"
+                            android:textSize="12sp" />
+                    </RadioGroup>
+                </HorizontalScrollView>
+
+                <!-- Accounts -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:text="ACCOUNT"
+                    android:textColor="#8C919E"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
+                <RadioGroup
+                    android:id="@+id/rg_island_accounts"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:orientation="horizontal">
+
+                    <RadioButton
+                        android:id="@+id/rb_island_sbi"
+                        android:layout_width="0dp"
+                        android:layout_height="32dp"
+                        android:layout_marginEnd="6dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/chip_dark_selector"
+                        android:button="@null"
+                        android:checked="true"
+                        android:gravity="center"
+                        android:text="SBI 7067"
+                        android:textColor="@drawable/chip_text_selector"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+
+                    <RadioButton
+                        android:id="@+id/rb_island_ippb"
+                        android:layout_width="0dp"
+                        android:layout_height="32dp"
+                        android:layout_marginEnd="6dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/chip_dark_selector"
+                        android:button="@null"
+                        android:gravity="center"
+                        android:text="IPPB 2938"
+                        android:textColor="@drawable/chip_text_selector"
+                        android:textSize="11sp" />
+
+                    <RadioButton
+                        android:id="@+id/rb_island_cash"
+                        android:layout_width="0dp"
+                        android:layout_height="32dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/chip_dark_selector"
+                        android:button="@null"
+                        android:gravity="center"
+                        android:text="Cash"
+                        android:textColor="@drawable/chip_text_selector"
+                        android:textSize="11sp" />
+                </RadioGroup>
+
+                <!-- Note / Merchant -->
+                <EditText
+                    android:id="@+id/et_island_note"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_dark_input"
+                    android:hint="Merchant / Note (e.g. Zomato, Chai)"
+                    android:paddingHorizontal="12dp"
+                    android:textColor="#FFFFFF"
+                    android:textColorHint="#60646F"
+                    android:textSize="12sp" />
+
+                <!-- Save Action Button (Crisp White Monochrome) -->
+                <Button
+                    android:id="@+id/btn_island_save"
+                    android:layout_width="match_parent"
+                    android:layout_height="46dp"
+                    android:layout_marginTop="16dp"
+                    android:backgroundTint="#FFFFFF"
+                    android:text="Save Expense"
+                    android:textAllCaps="false"
+                    android:textColor="#090A0E"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+</FrameLayout>
