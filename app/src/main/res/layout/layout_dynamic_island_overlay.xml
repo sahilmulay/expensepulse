@@ -91,12 +91,13 @@
 
                     <ImageButton
                         android:id="@+id/btn_island_collapse"
-                        android:layout_width="28dp"
-                        android:layout_height="28dp"
-                        android:background="?android:attr/selectableItemBackgroundBorderless"
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:background="@drawable/bg_circle_collapse"
                         android:contentDescription="Collapse"
+                        android:padding="11dp"
                         android:src="@android:drawable/arrow_up_float"
-                        app:tint="#8C919E" />
+                        app:tint="#FFFFFF" />
                 </LinearLayout>
 
                 <!-- Amount Input -->
@@ -168,18 +169,6 @@
                             android:textStyle="bold" />
 
                         <RadioButton
-                            android:id="@+id/rb_island_chai"
-                            android:layout_width="wrap_content"
-                            android:layout_height="34dp"
-                            android:layout_marginEnd="6dp"
-                            android:background="@drawable/chip_dark_selector"
-                            android:button="@null"
-                            android:paddingHorizontal="14dp"
-                            android:text="☕ Chai"
-                            android:textColor="@drawable/chip_text_selector"
-                            android:textSize="12sp" />
-
-                        <RadioButton
                             android:id="@+id/rb_island_groceries"
                             android:layout_width="wrap_content"
                             android:layout_height="34dp"
@@ -200,18 +189,6 @@
                             android:button="@null"
                             android:paddingHorizontal="14dp"
                             android:text="🛵 Travel"
-                            android:textColor="@drawable/chip_text_selector"
-                            android:textSize="12sp" />
-
-                        <RadioButton
-                            android:id="@+id/rb_island_split"
-                            android:layout_width="wrap_content"
-                            android:layout_height="34dp"
-                            android:layout_marginEnd="6dp"
-                            android:background="@drawable/chip_dark_selector"
-                            android:button="@null"
-                            android:paddingHorizontal="14dp"
-                            android:text="🤝 Split"
                             android:textColor="@drawable/chip_text_selector"
                             android:textSize="12sp" />
 

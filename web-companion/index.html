@@ -145,7 +145,7 @@
                 <p class="text-[10px] text-[#8C919E]">Shake phone or tap to log</p>
               </div>
             </div>
-            <button id="btnDismissIsland" class="w-7 h-7 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition text-xs">
+            <button id="btnDismissIsland" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-white transition text-sm shadow-sm" title="Dismiss">
               <i class="fa-solid fa-chevron-up"></i>
             </button>
           </div>
@@ -163,37 +163,29 @@
           <!-- Category Selection -->
           <div>
             <span class="text-[10px] font-bold tracking-wider uppercase text-[#8C919E] block mb-2">Category</span>
-            <div class="grid grid-cols-4 gap-1.5 sm:gap-2 text-xs" id="islandCategoryGrid">
-              <button type="button" class="cat-btn active bg-white text-[#090A0E] py-2 rounded-xl font-bold text-center transition flex flex-col items-center justify-center space-y-0.5" data-cat="FOOD_DINING" data-label="Food">
-                <span class="text-sm">🍔</span>
+            <div class="grid grid-cols-3 gap-2 text-xs" id="islandCategoryGrid">
+              <button type="button" class="cat-btn active bg-white text-[#090A0E] py-2.5 rounded-xl font-bold text-center transition flex flex-col items-center justify-center space-y-0.5" data-cat="FOOD_DINING" data-label="Food">
+                <span class="text-base">🍔</span>
                 <span class="text-[11px]">Food</span>
               </button>
-              <button type="button" class="cat-btn bg-white/[0.06] text-[#C4C7D0] hover:bg-white/10 py-2 rounded-xl font-medium text-center transition flex flex-col items-center justify-center space-y-0.5" data-cat="CHAI_SNACKS" data-label="Chai">
-                <span class="text-sm">☕</span>
-                <span class="text-[11px]">Chai</span>
-              </button>
-              <button type="button" class="cat-btn bg-white/[0.06] text-[#C4C7D0] hover:bg-white/10 py-2 rounded-xl font-medium text-center transition flex flex-col items-center justify-center space-y-0.5" data-cat="GROCERIES" data-label="Grocery">
-                <span class="text-sm">🛒</span>
+              <button type="button" class="cat-btn bg-white/[0.06] text-[#C4C7D0] hover:bg-white/10 py-2.5 rounded-xl font-medium text-center transition flex flex-col items-center justify-center space-y-0.5" data-cat="GROCERIES" data-label="Grocery">
+                <span class="text-base">🛒</span>
                 <span class="text-[11px]">Grocery</span>
               </button>
-              <button type="button" class="cat-btn bg-white/[0.06] text-[#C4C7D0] hover:bg-white/10 py-2 rounded-xl font-medium text-center transition flex flex-col items-center justify-center space-y-0.5" data-cat="FUEL_TRAVEL" data-label="Travel">
-                <span class="text-sm">🛵</span>
+              <button type="button" class="cat-btn bg-white/[0.06] text-[#C4C7D0] hover:bg-white/10 py-2.5 rounded-xl font-medium text-center transition flex flex-col items-center justify-center space-y-0.5" data-cat="FUEL_TRAVEL" data-label="Travel">
+                <span class="text-base">🛵</span>
                 <span class="text-[11px]">Travel</span>
               </button>
-              <button type="button" class="cat-btn bg-white/[0.06] text-[#C4C7D0] hover:bg-white/10 py-2 rounded-xl font-medium text-center transition flex flex-col items-center justify-center space-y-0.5" data-cat="FRIENDS_SPLIT" data-label="Split">
-                <span class="text-sm">🤝</span>
-                <span class="text-[11px]">Split</span>
-              </button>
-              <button type="button" class="cat-btn bg-white/[0.06] text-[#C4C7D0] hover:bg-white/10 py-2 rounded-xl font-medium text-center transition flex flex-col items-center justify-center space-y-0.5" data-cat="BILLS_RECHARGE" data-label="Bills">
-                <span class="text-sm">⚡</span>
+              <button type="button" class="cat-btn bg-white/[0.06] text-[#C4C7D0] hover:bg-white/10 py-2.5 rounded-xl font-medium text-center transition flex flex-col items-center justify-center space-y-0.5" data-cat="BILLS_RECHARGE" data-label="Bills">
+                <span class="text-base">⚡</span>
                 <span class="text-[11px]">Bills</span>
               </button>
-              <button type="button" class="cat-btn bg-white/[0.06] text-[#C4C7D0] hover:bg-white/10 py-2 rounded-xl font-medium text-center transition flex flex-col items-center justify-center space-y-0.5" data-cat="SHOPPING" data-label="Retail">
-                <span class="text-sm">🛍️</span>
+              <button type="button" class="cat-btn bg-white/[0.06] text-[#C4C7D0] hover:bg-white/10 py-2.5 rounded-xl font-medium text-center transition flex flex-col items-center justify-center space-y-0.5" data-cat="SHOPPING" data-label="Retail">
+                <span class="text-base">🛍️</span>
                 <span class="text-[11px]">Retail</span>
               </button>
-              <button type="button" class="cat-btn bg-white/[0.06] text-[#C4C7D0] hover:bg-white/10 py-2 rounded-xl font-medium text-center transition flex flex-col items-center justify-center space-y-0.5" data-cat="OTHER" data-label="Other">
-                <span class="text-sm">📝</span>
+              <button type="button" class="cat-btn bg-white/[0.06] text-[#C4C7D0] hover:bg-white/10 py-2.5 rounded-xl font-medium text-center transition flex flex-col items-center justify-center space-y-0.5" data-cat="OTHER" data-label="Other">
+                <span class="text-base">📝</span>
                 <span class="text-[11px]">Other</span>
               </button>
             </div>

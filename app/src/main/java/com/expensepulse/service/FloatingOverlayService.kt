@@ -14,7 +14,9 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import android.view.Gravity
+import android.view.KeyEvent
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.view.animation.AccelerateInterpolator
@@ -107,6 +109,26 @@ class FloatingOverlayService : Service() {
         if (initialAmount.isNotEmpty()) etAmount?.setText(initialAmount)
         if (initialMerchant.isNotEmpty()) etNote?.setText(initialMerchant)
 
+        // Intercept Android Back Button / Back Gesture to dismiss smoothly
+        overlayView?.isFocusableInTouchMode = true
+        overlayView?.requestFocus()
+        overlayView?.setOnKeyListener { _, keyCode, event ->
+            if (keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_UP) {
+                dismissSmoothly()
+                true
+            } else {
+                false
+            }
+        }
+
+        // Tap outside the card to dismiss
+        overlayView?.findViewById<View>(R.id.island_root)?.setOnClickListener {
+            dismissSmoothly()
+        }
+        islandCard?.setOnClickListener {
+            // Keep card content clicks active
+        }
+
         btnCollapse?.setOnClickListener {
             dismissSmoothly()
         }
@@ -122,10 +144,8 @@ class FloatingOverlayService : Service() {
 
             val category = when (rgCategories?.checkedRadioButtonId) {
                 R.id.rb_island_food -> Category.FOOD_DINING
-                R.id.rb_island_chai -> Category.CHAI_SNACKS
                 R.id.rb_island_groceries -> Category.GROCERIES
                 R.id.rb_island_travel -> Category.FUEL_TRAVEL
-                R.id.rb_island_split -> Category.FRIENDS_SPLIT
                 R.id.rb_island_bills -> Category.BILLS_RECHARGE
                 else -> Category.OTHER
             }
