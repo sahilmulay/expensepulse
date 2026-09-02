@@ -553,6 +553,18 @@
           </div>
         </div>
 
+        <!-- Shake to Log Toggle Section -->
+        <div class="p-3.5 bg-[#F8F9FA] rounded-2xl border border-[#E9EBEF] flex items-center justify-between">
+          <div>
+            <div class="text-xs font-bold text-[#111317]">Shake Phone to Log</div>
+            <div class="text-[10px] text-[#8C919E]">Requires rapid, deliberate double-shake</div>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="toggleShakeSetting" class="sr-only peer" checked>
+            <div class="w-10 h-5 bg-[#D6D9E0] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#111317]"></div>
+          </label>
+        </div>
+
         <!-- Install Web App Option -->
         <div class="pt-2">
           <button id="btnSettingsInstall" class="w-full bg-[#F5F6F8] hover:bg-[#EAECEF] border border-[#E3E6EB] text-[#111317] font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center space-x-1.5">
@@ -1306,13 +1318,25 @@
 
     // Settings Modal
     const settingsModal = document.getElementById('settingsModal');
+    const toggleShakeSetting = document.getElementById('toggleShakeSetting');
+
     function openSettings() {
       renderAccountSelectors();
       document.getElementById('monthlyBudgetInput').value = monthlyBudget;
+      if (toggleShakeSetting) {
+        toggleShakeSetting.checked = shakeEnabled;
+      }
       settingsModal.classList.remove('hidden');
     }
     function closeSettings() {
       settingsModal.classList.add('hidden');
+    }
+
+    if (toggleShakeSetting) {
+      toggleShakeSetting.addEventListener('change', (e) => {
+        shakeEnabled = e.target.checked;
+        localStorage.setItem('ep_shake_enabled', JSON.stringify(shakeEnabled));
+      });
     }
 
     document.getElementById('btnHeaderSettings').addEventListener('click', openSettings);
@@ -1352,80 +1376,97 @@
     // Search filter
     document.getElementById('searchInput').addEventListener('input', renderTransactions);
 
-    // Robust Intentional Shake & Gesture Detection (Zero False Positives)
+    // DUAL-SENSOR (ACCELEROMETER + GYROSCOPE) DELIBERATE SHAKE DETECTION
     let isIslandActive = false;
-    let lastShakeTriggerTime = 0;
+    let pageLoadTime = Date.now();
+    let lastIslandDismissTime = 0;
+    let shakeEnabled = JSON.parse(localStorage.getItem('ep_shake_enabled') || 'true');
 
-    // Track open state
     const originalOpenDynamicIsland = openDynamicIsland;
     openDynamicIsland = function() {
       isIslandActive = true;
-      lastShakeTriggerTime = Date.now();
       originalOpenDynamicIsland();
     };
 
     const originalDismissDynamicIsland = dismissDynamicIsland;
     dismissDynamicIsland = function() {
       originalDismissDynamicIsland();
-      setTimeout(() => { isIslandActive = false; }, 400);
+      lastIslandDismissTime = Date.now();
+      setTimeout(() => { isIslandActive = false; }, 600);
     };
 
     if (window.DeviceMotionEvent) {
-      let shakeCount = 0;
-      let lastShakePeakTime = 0;
-      let lastZ = undefined;
-      let zTapCount = 0;
-      let lastZTapTime = 0;
+      let swingHistory = [];
+      let lastSwingTime = 0;
+      let lastAxisSign = 0;
 
       window.addEventListener('devicemotion', (e) => {
         const now = Date.now();
 
-        // 1. Guard: If island is already open or opened in the last 2 seconds, do nothing!
-        if (isIslandActive || (now - lastShakeTriggerTime < 2200)) return;
+        // 1. Warm-up & State Guards:
+        // Ignore for 2 seconds after page load
+        // Ignore if shake is disabled in settings
+        // Ignore if island is open or was closed less than 2.5s ago
+        if (!shakeEnabled) return;
+        if (now - pageLoadTime < 2000) return;
+        if (isIslandActive || (now - lastIslandDismissTime < 2500)) return;
 
-        // 2. Pure Linear Acceleration (excluding constant 9.8 gravity)
-        const acc = e.acceleration;
-        if (acc && acc.x !== null) {
-          const mag = Math.sqrt(acc.x * acc.x + acc.y * acc.y + acc.z * acc.z);
+        // 2. GYROSCOPE VERIFICATION (Requires rapid angular wrist rotation)
+        const rot = e.rotationRate;
+        let rotSpeed = 0;
+        if (rot) {
+          rotSpeed = (Math.abs(rot.alpha || 0) + Math.abs(rot.beta || 0) + Math.abs(rot.gamma || 0));
+        }
 
-          // Requires a real physical shake (> 18 m/s² of vigorous force)
-          if (mag > 18.5) {
-            if (now - lastShakePeakTime < 450) {
-              shakeCount++;
-              if (shakeCount >= 2) {
-                shakeCount = 0;
-                lastShakeTriggerTime = now;
-                openDynamicIsland();
-                return;
-              }
-            } else {
-              shakeCount = 1;
-            }
-            lastShakePeakTime = now;
-          }
+        // 3. ACCELEROMETER LINEAR MAGNITUDE
+        let accelMag = 0;
+        let primaryAxisVal = 0;
+
+        if (e.acceleration && e.acceleration.x !== null) {
+          const ax = e.acceleration.x, ay = e.acceleration.y, az = e.acceleration.z;
+          accelMag = Math.sqrt(ax * ax + ay * ay + az * az);
+          primaryAxisVal = Math.abs(ax) > Math.abs(ay) ? ax : ay;
         } else if (e.accelerationIncludingGravity) {
-          // Fallback with gravity offset
-          const gAcc = e.accelerationIncludingGravity;
-          const mag = Math.sqrt(gAcc.x * gAcc.x + gAcc.y * gAcc.y + gAcc.z * gAcc.z);
-          // 9.8 is resting gravity. Vigorous shake exceeds 26 m/s² (approx 2.7g)
-          if (Math.abs(mag - 9.8) > 16.0) {
-            if (now - lastShakePeakTime < 450) {
-              shakeCount++;
-              if (shakeCount >= 2) {
-                shakeCount = 0;
-                lastShakeTriggerTime = now;
+          const gx = e.accelerationIncludingGravity.x || 0;
+          const gy = e.accelerationIncludingGravity.y || 0;
+          const gz = e.accelerationIncludingGravity.z || 0;
+          const totalMag = Math.sqrt(gx * gx + gy * gy + gz * gz);
+          accelMag = Math.abs(totalMag - 9.8);
+          primaryAxisVal = Math.abs(gx) > Math.abs(gy) ? gx : gy;
+        }
+
+        // 4. DUAL THRESHOLD: Deliberate rapid motion
+        // - Accelerometer force must exceed 24 m/s² (~2.5g)
+        // - Gyroscope rotational velocity must exceed 280 deg/s (or if gyro not reported, higher accel threshold > 32 m/s²)
+        const hasGyro = rotSpeed > 0;
+        const satisfiesAccel = hasGyro ? (accelMag > 22) : (accelMag > 30);
+        const satisfiesGyro = hasGyro ? (rotSpeed > 260) : true;
+
+        if (satisfiesAccel && satisfiesGyro) {
+          const currentSign = primaryAxisVal > 0 ? 1 : -1;
+
+          // Enforce at least 110ms between swings to prevent a single movement counting multiple times
+          if (now - lastSwingTime > 110) {
+            // Require direction reversal (swing back and forth)
+            if (currentSign !== lastAxisSign) {
+              swingHistory.push(now);
+              lastAxisSign = currentSign;
+              lastSwingTime = now;
+
+              // Keep swings within 650ms window
+              swingHistory = swingHistory.filter(t => now - t < 650);
+
+              // Require 3 deliberate back-and-forth directional swings
+              if (swingHistory.length >= 3) {
+                swingHistory = [];
+                lastIslandDismissTime = now;
                 openDynamicIsland();
-                return;
               }
-            } else {
-              shakeCount = 1;
             }
-            lastShakePeakTime = now;
           }
         }
       });
     }
-
     // Initial render
     renderAccountSelectors();
     renderAll();
