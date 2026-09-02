@@ -1,0 +1,19 @@
+{
+  "name": "ExpensePulse - Personal Expense Manager",
+  "short_name": "ExpensePulse",
+  "description": "Minimalist UPI expense manager with Apple Dynamic Island liquid popup and statement importer",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#090A0E",
+  "theme_color": "#111317",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

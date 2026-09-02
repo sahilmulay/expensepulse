@@ -1,8 +1,4 @@
 {
   "version": 2,
-  "cleanUrls": true,
-  "rewrites": [
-    { "source": "/", "destination": "/web-companion/index.html" },
-    { "source": "/(.*)", "destination": "/web-companion/$1" }
-  ]
+  "cleanUrls": true
 }
