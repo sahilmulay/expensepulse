@@ -40,6 +40,7 @@ object CsvExporter {
                 val cleanMerchant = tx.merchantOrPerson.replace("\"", "\"\"").replace("\n", " ")
                 val typeStr = when (tx.type) {
                     TransactionType.EXPENSE -> "Expense"
+                    TransactionType.INCOME -> "Income"
                     TransactionType.SELF_TRANSFER -> "Self Transfer"
                     TransactionType.SETTLEMENT -> "Friend Settlement"
                 }

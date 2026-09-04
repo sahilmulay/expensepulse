@@ -150,6 +150,33 @@ class FloatingOverlayService : Service() {
         compactLayout?.visibility = View.GONE
         expandedLayout?.visibility = View.VISIBLE
 
+        // DYNAMIC CATEGORY POPULATION:
+        // Dynamically reflect any customized names, emojis, or enabled categories from CategoryManager
+        rgCategories?.removeAllViews()
+        val activeCategories = CategoryManager.getCategories(this).filter { it.isEnabled }
+        activeCategories.forEachIndexed { index, catItem ->
+            val rb = RadioButton(this).apply {
+                id = View.generateViewId()
+                text = "${catItem.iconEmoji} ${catItem.displayName}"
+                tag = catItem.enumCategory
+                buttonDrawable = null // Remove standard radio circle
+                setBackgroundResource(R.drawable.chip_dark_selector)
+                setTextColor(ContextCompat.getColorStateList(this@FloatingOverlayService, R.drawable.chip_text_selector))
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+                typeface = Typeface.DEFAULT_BOLD
+                setPadding(dpToPx(14), 0, dpToPx(14), 0)
+                gravity = Gravity.CENTER
+                layoutParams = RadioGroup.LayoutParams(
+                    RadioGroup.LayoutParams.WRAP_CONTENT,
+                    dpToPx(34)
+                ).apply {
+                    marginEnd = dpToPx(6)
+                }
+                isChecked = (index == 0)
+            }
+            rgCategories?.addView(rb)
+        }
+
         fun selectCategoryInGroup(targetCat: Category) {
             val count = rgCategories?.childCount ?: 0
             for (i in 0 until count) {
@@ -185,33 +212,6 @@ class FloatingOverlayService : Service() {
             }
             override fun afterTextChanged(s: android.text.Editable?) {}
         })
-
-        // DYNAMIC CATEGORY POPULATION:
-        // Dynamically reflect any customized names, emojis, or enabled categories from CategoryManager
-        rgCategories?.removeAllViews()
-        val activeCategories = CategoryManager.getCategories(this).filter { it.isEnabled }
-        activeCategories.forEachIndexed { index, catItem ->
-            val rb = RadioButton(this).apply {
-                id = View.generateViewId()
-                text = "${catItem.iconEmoji} ${catItem.displayName}"
-                tag = catItem.enumCategory
-                buttonDrawable = null // Remove standard radio circle
-                setBackgroundResource(R.drawable.chip_dark_selector)
-                setTextColor(ContextCompat.getColorStateList(this@FloatingOverlayService, R.drawable.chip_text_selector))
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
-                typeface = Typeface.DEFAULT_BOLD
-                setPadding(dpToPx(14), 0, dpToPx(14), 0)
-                gravity = Gravity.CENTER
-                layoutParams = RadioGroup.LayoutParams(
-                    RadioGroup.LayoutParams.WRAP_CONTENT,
-                    dpToPx(34)
-                ).apply {
-                    marginEnd = dpToPx(6)
-                }
-                isChecked = (index == 0)
-            }
-            rgCategories?.addView(rb)
-        }
 
         // Intercept Touch Outside & Back buttons
         rootContainer.isFocusable = true
