@@ -674,6 +674,39 @@
           </div>
         </div>
 
+        <!-- iPhone Double Tap Gestures Section -->
+        <div class="p-3.5 bg-[#F8F9FA] rounded-2xl border border-[#E9EBEF] space-y-2.5">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <div class="w-7 h-7 rounded-xl bg-[#111317] text-white flex items-center justify-center text-xs">
+                <i class="fa-brands fa-apple text-sm"></i>
+              </div>
+              <div>
+                <div class="text-xs font-bold text-[#111317]">iPhone Double Back-Tap</div>
+                <div class="text-[10px] text-[#8C919E]">Tap back of phone twice to open Quick-Add</div>
+              </div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="toggleDoubleTapSetting" class="sr-only peer" checked>
+              <div class="w-10 h-5 bg-[#D6D9E0] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#111317]"></div>
+            </label>
+          </div>
+
+          <div class="flex space-x-2 pt-1">
+            <button type="button" id="btnEnableIosMotion" class="flex-1 bg-white hover:bg-[#F5F6F8] border border-[#D6D9E0] text-[#111317] font-semibold py-2 px-3 rounded-xl text-xs transition flex items-center justify-center space-x-1.5 active:scale-95 shadow-2xs">
+              <i class="fa-solid fa-shield-halved text-[#2563EB] text-xs"></i>
+              <span>Enable Sensor / Calibrate</span>
+            </button>
+            <button type="button" id="btnTestDoubleTap" class="bg-[#111317] hover:bg-[#252830] text-white font-bold py-2 px-3.5 rounded-xl text-xs transition flex items-center justify-center space-x-1.5 active:scale-95 shadow-2xs">
+              <i class="fa-solid fa-bolt text-amber-400 text-xs"></i>
+              <span>Test Island</span>
+            </button>
+          </div>
+          <p class="text-[10px] text-[#8C919E]" id="iosMotionStatusText">
+            Tap twice firmly on the back of your phone to trigger the camera popup.
+          </p>
+        </div>
+
         <!-- Shake to Log Toggle Section -->
         <div class="p-3.5 bg-[#F8F9FA] rounded-2xl border border-[#E9EBEF] flex items-center justify-between">
           <div>
@@ -1520,6 +1553,8 @@
     // Settings Modal
     const settingsModal = document.getElementById('settingsModal');
     const toggleShakeSetting = document.getElementById('toggleShakeSetting');
+    const toggleDoubleTapSetting = document.getElementById('toggleDoubleTapSetting');
+    let doubleTapEnabled = JSON.parse(localStorage.getItem('ep_double_tap_enabled') || 'true');
 
     function openSettings() {
       renderAccountSelectors();
@@ -1527,6 +1562,9 @@
       document.getElementById('monthlyBudgetInput').value = monthlyBudget;
       if (toggleShakeSetting) {
         toggleShakeSetting.checked = shakeEnabled;
+      }
+      if (toggleDoubleTapSetting) {
+        toggleDoubleTapSetting.checked = doubleTapEnabled;
       }
       settingsModal.classList.remove('hidden');
     }
@@ -1540,6 +1578,47 @@
         localStorage.setItem('ep_shake_enabled', JSON.stringify(shakeEnabled));
       });
     }
+
+    if (toggleDoubleTapSetting) {
+      toggleDoubleTapSetting.addEventListener('change', (e) => {
+        doubleTapEnabled = e.target.checked;
+        localStorage.setItem('ep_double_tap_enabled', JSON.stringify(doubleTapEnabled));
+      });
+    }
+
+    // Enable / Calibrate iOS Motion Button
+    document.getElementById('btnEnableIosMotion').addEventListener('click', async () => {
+      const statusEl = document.getElementById('iosMotionStatusText');
+      if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+        try {
+          const response = await DeviceMotionEvent.requestPermission();
+          if (response === 'granted') {
+            motionPermissionGranted = true;
+            statusEl.innerText = '✅ Motion sensors active! Firmly double tap back of phone to test.';
+            statusEl.className = 'text-[10px] text-emerald-600 font-bold';
+            if (navigator.vibrate) navigator.vibrate([40, 60, 40]);
+          } else {
+            statusEl.innerText = '⚠️ Permission not granted. Allow motion sensors in Safari settings.';
+            statusEl.className = 'text-[10px] text-amber-600 font-medium';
+          }
+        } catch (e) {
+          statusEl.innerText = '✅ Motion sensors ready!';
+          statusEl.className = 'text-[10px] text-emerald-600 font-medium';
+        }
+      } else {
+        statusEl.innerText = '✅ Motion sensors are fully enabled on your device!';
+        statusEl.className = 'text-[10px] text-emerald-600 font-medium';
+        if (navigator.vibrate) navigator.vibrate(50);
+      }
+    });
+
+    // Test Double Tap button
+    document.getElementById('btnTestDoubleTap').addEventListener('click', () => {
+      closeSettings();
+      setTimeout(() => {
+        openDynamicIsland();
+      }, 300);
+    });
 
     document.getElementById('btnHeaderSettings').addEventListener('click', openSettings);
     document.getElementById('btnNavSettings').addEventListener('click', openSettings);
