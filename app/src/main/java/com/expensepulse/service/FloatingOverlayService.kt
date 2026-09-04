@@ -6,6 +6,7 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.PixelFormat
+import android.graphics.Typeface
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
@@ -13,6 +14,7 @@ import android.os.Looper
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -23,14 +25,18 @@ import android.view.animation.AccelerateInterpolator
 import android.view.animation.OvershootInterpolator
 import android.widget.Button
 import android.widget.EditText
+import android.widget.FrameLayout
 import android.widget.ImageButton
+import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.cardview.widget.CardView
+import androidx.core.content.ContextCompat
 import com.expensepulse.ExpensePulseApplication
 import com.expensepulse.R
 import com.expensepulse.data.Category
+import com.expensepulse.data.CategoryManager
 import com.expensepulse.data.TransactionEntity
 import com.expensepulse.data.TransactionType
 import kotlinx.coroutines.CoroutineScope
@@ -39,17 +45,52 @@ import kotlinx.coroutines.launch
 
 /**
  * Dynamic Island Style Floating Overlay for Android.
- * ONLY emerges when phone is shaken. Smoothly expands out of the front camera cutout,
- * and seamlessly retreats back into the camera hole when dismissed or saved.
- * Leaves ZERO persistent UI on screen when idle.
+ * ONLY emerges when phone is shaken or quick-add is triggered.
+ * Dynamically loads user categories and seamlessly dismisses on Android Back Button / Back Gesture.
  */
 class FloatingOverlayService : Service() {
 
     private var windowManager: WindowManager? = null
     private var overlayView: View? = null
     private var islandCard: CardView? = null
+    private var isDismissing: Boolean = false
     private val serviceScope = CoroutineScope(Dispatchers.IO)
     private val mainHandler = Handler(Looper.getMainLooper())
+
+    /**
+     * Custom root FrameLayout that intercepts Android Hardware/Gesture Back Button
+     * before and after IME (keyboard) and handles outside touch dismissals.
+     */
+    private inner class OverlayRootLayout(context: Context) : FrameLayout(context) {
+
+        override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+            if (event.keyCode == KeyEvent.KEYCODE_BACK || event.keyCode == KeyEvent.KEYCODE_ESCAPE) {
+                if (event.action == KeyEvent.ACTION_UP) {
+                    dismissSmoothly()
+                }
+                return true
+            }
+            return super.dispatchKeyEvent(event)
+        }
+
+        override fun dispatchKeyEventPreIme(event: KeyEvent): Boolean {
+            if (event.keyCode == KeyEvent.KEYCODE_BACK || event.keyCode == KeyEvent.KEYCODE_ESCAPE) {
+                if (event.action == KeyEvent.ACTION_UP) {
+                    dismissSmoothly()
+                }
+                return true
+            }
+            return super.dispatchKeyEventPreIme(event)
+        }
+
+        override fun onTouchEvent(event: MotionEvent): Boolean {
+            if (event.action == MotionEvent.ACTION_OUTSIDE) {
+                dismissSmoothly()
+                return true
+            }
+            return super.onTouchEvent(event)
+        }
+    }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -69,8 +110,12 @@ class FloatingOverlayService : Service() {
     }
 
     private fun showDynamicIsland(initialAmount: String, initialMerchant: String) {
+        isDismissing = false
+
+        val rootContainer = OverlayRootLayout(this)
         val layoutInflater = LayoutInflater.from(this)
-        overlayView = layoutInflater.inflate(R.layout.layout_dynamic_island_overlay, null)
+        layoutInflater.inflate(R.layout.layout_dynamic_island_overlay, rootContainer, true)
+        overlayView = rootContainer
 
         val paramsType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
@@ -86,7 +131,6 @@ class FloatingOverlayService : Service() {
             WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
             PixelFormat.TRANSLUCENT
         ).apply {
-            // Anchor directly at top center under the front camera punch hole
             gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
             y = 8 // Sits precisely below camera notch
         }
@@ -102,26 +146,45 @@ class FloatingOverlayService : Service() {
         val btnCollapse = overlayView?.findViewById<ImageButton>(R.id.btn_island_collapse)
         val btnSave = overlayView?.findViewById<Button>(R.id.btn_island_save)
 
-        // Show expanded form directly since shake occurred
+        // Show expanded form directly
         compactLayout?.visibility = View.GONE
         expandedLayout?.visibility = View.VISIBLE
 
         if (initialAmount.isNotEmpty()) etAmount?.setText(initialAmount)
         if (initialMerchant.isNotEmpty()) etNote?.setText(initialMerchant)
 
-        // Intercept Android Back Button / Back Gesture to dismiss smoothly
-        overlayView?.isFocusableInTouchMode = true
-        overlayView?.requestFocus()
-        overlayView?.setOnKeyListener { _, keyCode, event ->
-            if (keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_UP) {
-                dismissSmoothly()
-                true
-            } else {
-                false
+        // DYNAMIC CATEGORY POPULATION:
+        // Dynamically reflect any customized names, emojis, or enabled categories from CategoryManager
+        rgCategories?.removeAllViews()
+        val activeCategories = CategoryManager.getCategories(this).filter { it.isEnabled }
+        activeCategories.forEachIndexed { index, catItem ->
+            val rb = RadioButton(this).apply {
+                id = View.generateViewId()
+                text = "${catItem.iconEmoji} ${catItem.displayName}"
+                tag = catItem.enumCategory
+                buttonDrawable = null // Remove standard radio circle
+                setBackgroundResource(R.drawable.chip_dark_selector)
+                setTextColor(ContextCompat.getColorStateList(this@FloatingOverlayService, R.drawable.chip_text_selector))
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+                typeface = Typeface.DEFAULT_BOLD
+                setPadding(dpToPx(14), 0, dpToPx(14), 0)
+                gravity = Gravity.CENTER
+                layoutParams = RadioGroup.LayoutParams(
+                    RadioGroup.LayoutParams.WRAP_CONTENT,
+                    dpToPx(34)
+                ).apply {
+                    marginEnd = dpToPx(6)
+                }
+                isChecked = (index == 0)
             }
+            rgCategories?.addView(rb)
         }
 
-        // Tap outside the card to dismiss
+        // Intercept Touch Outside & Back buttons
+        rootContainer.isFocusable = true
+        rootContainer.isFocusableInTouchMode = true
+        rootContainer.requestFocus()
+
         overlayView?.findViewById<View>(R.id.island_root)?.setOnClickListener {
             dismissSmoothly()
         }
@@ -142,13 +205,10 @@ class FloatingOverlayService : Service() {
                 return@setOnClickListener
             }
 
-            val category = when (rgCategories?.checkedRadioButtonId) {
-                R.id.rb_island_food -> Category.FOOD_DINING
-                R.id.rb_island_groceries -> Category.GROCERIES
-                R.id.rb_island_travel -> Category.FUEL_TRAVEL
-                R.id.rb_island_bills -> Category.BILLS_RECHARGE
-                else -> Category.OTHER
-            }
+            // Retrieve category from dynamic RadioButton tag
+            val checkedCatId = rgCategories?.checkedRadioButtonId ?: -1
+            val checkedCatRb = overlayView?.findViewById<RadioButton>(checkedCatId)
+            val category = (checkedCatRb?.tag as? Category) ?: Category.OTHER
 
             val bankAccount = when (rgAccounts?.checkedRadioButtonId) {
                 R.id.rb_island_sbi -> "State Bank of India 7067"
@@ -158,14 +218,13 @@ class FloatingOverlayService : Service() {
             }
 
             val noteInput = etNote?.text?.toString()?.trim()
+            val categoryItem = CategoryManager.getCategoryItem(this, category)
             val merchant = if (!noteInput.isNullOrEmpty()) {
                 noteInput
-            } else if (bankAccount == "Cash" && (category == Category.OTHER || category == Category.FOOD_DINING && noteInput.isNullOrEmpty() && false)) {
-                "Paid via Cash"
             } else if (bankAccount == "Cash" && category == Category.OTHER) {
                 "Paid via Cash"
             } else {
-                "Paid to ${category.displayName}"
+                "Paid to ${categoryItem.displayName}"
             }
 
             val transaction = TransactionEntity(
@@ -190,9 +249,7 @@ class FloatingOverlayService : Service() {
         try {
             windowManager?.addView(overlayView, params)
 
-            // Apple Dynamic Island Liquid Physics (560ms Liquid Droplet Stretch & Squash):
-            // 1. Droplet stretches vertically down from camera hole first
-            // 2. Liquid blooms horizontally and settles with surface tension damping
+            // Apple Dynamic Island Liquid Physics
             islandCard?.apply {
                 pivotX = width.toFloat() / 2f
                 pivotY = 0f
@@ -201,16 +258,14 @@ class FloatingOverlayService : Service() {
                 alpha = 0f
                 translationY = -20f
 
-                // Liquid vertical stretch & blossom
                 animate()
                     .scaleX(1.0f)
                     .scaleY(1.0f)
                     .alpha(1.0f)
                     .translationY(0f)
-                    .setDuration(560) // Snappy yet luscious 560ms
+                    .setDuration(560)
                     .setInterpolator(
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            // Asymmetric spring: fast initial tear, gentle surface-tension dampening
                             android.view.animation.PathInterpolator(0.2f, 0.9f, 0.3f, 1.0f)
                         } else {
                             android.view.animation.OvershootInterpolator(1.08f)
@@ -227,6 +282,10 @@ class FloatingOverlayService : Service() {
         }
     }
 
+    private fun dpToPx(dp: Int): Int {
+        return (dp * resources.displayMetrics.density).toInt()
+    }
+
     private fun showSuccessAndDismiss(amount: Double, category: Category) {
         val compactLayout = overlayView?.findViewById<View>(R.id.layout_island_compact)
         val expandedLayout = overlayView?.findViewById<View>(R.id.layout_island_expanded)
@@ -237,8 +296,9 @@ class FloatingOverlayService : Service() {
         expandedLayout?.visibility = View.GONE
         compactLayout?.visibility = View.VISIBLE
 
+        val categoryItem = CategoryManager.getCategoryItem(this, category)
         tvPillIcon?.text = "✓"
-        tvPillText?.text = "Logged to ${category.displayName}"
+        tvPillText?.text = "Logged to ${categoryItem.displayName}"
         tvPillAmount?.visibility = View.VISIBLE
         tvPillAmount?.text = "₹${amount.toInt()}"
 
@@ -249,13 +309,15 @@ class FloatingOverlayService : Service() {
     }
 
     private fun dismissSmoothly() {
-        // Liquid retracts: pinches inward and pulls into camera cutout (460ms)
+        if (isDismissing) return
+        isDismissing = true
+
         islandCard?.animate()
             ?.scaleX(0.08f)
             ?.scaleY(0.08f)
             ?.alpha(0f)
             ?.translationY(-20f)
-            ?.setDuration(460) // Liquid ink suction 460ms
+            ?.setDuration(460)
             ?.setInterpolator(
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     android.view.animation.PathInterpolator(0.4f, 0f, 0.2f, 1.0f)
@@ -265,7 +327,6 @@ class FloatingOverlayService : Service() {
             )
             ?.setListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
-                    // Clear inputs completely so next trigger is fresh
                     overlayView?.findViewById<EditText>(R.id.et_island_amount)?.setText("")
                     overlayView?.findViewById<EditText>(R.id.et_island_note)?.setText("")
                     removeOverlay()
