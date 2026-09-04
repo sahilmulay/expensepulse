@@ -363,6 +363,66 @@ fun DashboardTab(
             }
         }
 
+        // Monthly Budget Tracker Card (Matches Web Companion 100%)
+        item {
+            val context = LocalContext.current
+            val prefs = remember { context.getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE) }
+            val budgetCap = remember { mutableStateOf(prefs.getFloat("monthly_budget_cap", 10000f).toDouble()) }
+            val remaining = budgetCap.value - totalExpense
+            val pct = if (budgetCap.value > 0) (totalExpense / budgetCap.value).coerceIn(0.0, 1.0) else 0.0
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                shape = RoundedCornerShape(20.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE9EBEF))
+            ) {
+                Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text("Monthly Budget", color = Color(0xFF8C919E), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text(
+                                if (remaining >= 0) "₹ ${"%,.2f".format(remaining)} left" else "Exceeded by ₹ ${"%,.2f".format(-remaining)}",
+                                color = if (remaining >= 0) Color(0xFF111317) else Color(0xFFDC2626),
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.ExtraBold
+                            )
+                        }
+                        Surface(
+                            color = Color(0xFFF5F6F8),
+                            shape = RoundedCornerShape(10.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE3E6EB))
+                        ) {
+                            Text(
+                                "Limit: ₹${"%,.0f".format(budgetCap.value)}",
+                                color = Color(0xFF454854),
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                            )
+                        }
+                    }
+
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        LinearProgressIndicator(
+                            progress = pct.toFloat(),
+                            modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
+                            color = if (remaining >= 0) Color(0xFF111317) else Color(0xFFDC2626),
+                            trackColor = Color(0xFFEAECEF)
+                        )
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text("${(pct * 100).toInt()}% spent", fontSize = 10.sp, color = Color(0xFF8C919E), fontWeight = FontWeight.Medium)
+                            Text("Spent ₹${"%,.0f".format(totalExpense)}", fontSize = 10.sp, color = Color(0xFF8C919E), fontWeight = FontWeight.Medium)
+                        }
+                    }
+                }
+            }
+        }
+
         // Account Breakdown
         item {
             Text("Accounts", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color(0xFF111317))
