@@ -626,6 +626,54 @@
           </div>
         </div>
 
+        <!-- Manage Categories Section -->
+        <div class="bg-[#F8F9FA] p-3.5 rounded-2xl border border-[#E9EBEF] space-y-3">
+          <div class="flex justify-between items-center">
+            <div>
+              <label class="block text-xs font-bold text-[#111317]">Manage Categories</label>
+              <p class="text-[10px] text-[#8C919E]">Customize categories for quick log & stats</p>
+            </div>
+            <button id="btnResetCategories" class="text-[10px] text-[#60646F] hover:text-[#111317] font-semibold bg-white border border-[#E3E6EB] px-2.5 py-1 rounded-lg transition active:scale-95">
+              Reset Default
+            </button>
+          </div>
+
+          <!-- Existing Categories Badges List -->
+          <div id="settingsCategoryList" class="flex flex-wrap gap-1.5 pt-1">
+            <!-- Dynamically populated via renderSettingsCategories() -->
+          </div>
+
+          <!-- Add New Category Sub-Form -->
+          <div class="pt-2 border-t border-[#EAECEF] space-y-2">
+            <span class="text-[10px] font-bold text-[#60646F] uppercase tracking-wider block">Add New Category</span>
+            <div class="flex space-x-2">
+              <select id="newCatEmojiSelect" class="bg-white border border-[#D6D9E0] rounded-xl px-2.5 py-2 text-sm focus:outline-none focus:border-[#111317]">
+                <option value="🍔">🍔 Food</option>
+                <option value="☕">☕ Chai/Coffee</option>
+                <option value="🛒">🛒 Grocery</option>
+                <option value="🛵">🛵 Travel</option>
+                <option value="⚡">⚡ Bills</option>
+                <option value="🛍️">🛍️ Retail</option>
+                <option value="🎬">🎬 Movies</option>
+                <option value="💊">💊 Pharmacy</option>
+                <option value="🏋️">🏋️ Fitness</option>
+                <option value="📚">📚 Education</option>
+                <option value="💻">💻 Tech</option>
+                <option value="🎁">🎁 Gifts</option>
+                <option value="✈️">✈️ Flights</option>
+                <option value="🐾">🐾 Pets</option>
+                <option value="🍻">🍻 Drinks</option>
+                <option value="📝">📝 Other</option>
+              </select>
+              <input id="newCatNameInput" type="text" placeholder="e.g. Gym, Coffee, Movies"
+                     class="flex-1 bg-white border border-[#D6D9E0] rounded-xl px-3 py-2 text-xs text-[#111317] focus:outline-none focus:border-[#111317]">
+              <button id="btnAddCategory" class="bg-[#111317] hover:bg-[#252830] text-white px-3.5 py-2 rounded-xl text-xs font-bold transition active:scale-95 whitespace-nowrap">
+                + Add
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- Shake to Log Toggle Section -->
         <div class="p-3.5 bg-[#F8F9FA] rounded-2xl border border-[#E9EBEF] flex items-center justify-between">
           <div>
@@ -731,21 +779,91 @@
       window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     }
 
-    // Category Label Mapping
-    const CATEGORY_NAMES = {
-      'FOOD_DINING': 'Food',
-      'CHAI_SNACKS': 'Chai',
-      'GROCERIES': 'Grocery',
-      'FUEL_TRAVEL': 'Travel',
-      'FRIENDS_SPLIT': 'Split',
-      'BILLS_RECHARGE': 'Bills',
-      'SHOPPING': 'Retail',
-      'OTHER': 'Other'
-    };
+    // Dynamic Category Store
+    const DEFAULT_CATEGORIES = [
+      { id: 'FOOD_DINING', label: 'Food', icon: '🍔' },
+      { id: 'GROCERIES', label: 'Grocery', icon: '🛒' },
+      { id: 'FUEL_TRAVEL', label: 'Travel', icon: '🛵' },
+      { id: 'BILLS_RECHARGE', label: 'Bills', icon: '⚡' },
+      { id: 'SHOPPING', label: 'Retail', icon: '🛍️' },
+      { id: 'OTHER', label: 'Other', icon: '📝' }
+    ];
+
+    let customCategories = JSON.parse(localStorage.getItem('ep_custom_categories_v2') || JSON.stringify(DEFAULT_CATEGORIES));
+    let selectedCategory = customCategories[0]?.id || "FOOD_DINING";
+
+    function getCategoryName(catId) {
+      const found = customCategories.find(c => c.id === catId);
+      return found ? found.label : (catId || 'Other');
+    }
+
+    function getCategoryIcon(catId) {
+      const found = customCategories.find(c => c.id === catId);
+      return found ? found.icon : '📝';
+    }
+
+    function saveCustomCategories() {
+      localStorage.setItem('ep_custom_categories_v2', JSON.stringify(customCategories));
+      renderIslandCategories();
+      renderSettingsCategories();
+      renderAll();
+    }
+
+    function renderIslandCategories() {
+      const grid = document.getElementById('islandCategoryGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      customCategories.forEach((cat, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        const isActive = cat.id === selectedCategory || (!selectedCategory && idx === 0);
+        btn.className = isActive 
+          ? 'cat-btn active bg-white text-[#090A0E] py-2.5 rounded-xl font-bold text-center transition flex flex-col items-center justify-center space-y-0.5 shadow-xs'
+          : 'cat-btn bg-white/[0.06] text-[#C4C7D0] hover:bg-white/10 py-2.5 rounded-xl font-medium text-center transition flex flex-col items-center justify-center space-y-0.5';
+        btn.setAttribute('data-cat', cat.id);
+        btn.setAttribute('data-label', cat.label);
+        btn.innerHTML = `
+          <span class="text-base">${cat.icon}</span>
+          <span class="text-[11px] truncate max-w-[85px]">${cat.label}</span>
+        `;
+        btn.onclick = () => {
+          selectedCategory = cat.id;
+          renderIslandCategories();
+        };
+        grid.appendChild(btn);
+      });
+    }
+
+    function renderSettingsCategories() {
+      const container = document.getElementById('settingsCategoryList');
+      if (!container) return;
+      container.innerHTML = '';
+      customCategories.forEach(cat => {
+        const badge = document.createElement('div');
+        badge.className = 'bg-white border border-[#E3E6EB] rounded-xl px-2.5 py-1.5 text-xs font-semibold text-[#111317] flex items-center space-x-1.5 shadow-2xs';
+        badge.innerHTML = `
+          <span>${cat.icon}</span>
+          <span>${cat.label}</span>
+          <button type="button" class="text-[#8C919E] hover:text-[#DC2626] ml-1 text-[11px] font-bold transition">✕</button>
+        `;
+        const deleteBtn = badge.querySelector('button');
+        deleteBtn.onclick = () => {
+          if (customCategories.length <= 2) {
+            alert('You must keep at least 2 categories.');
+            return;
+          }
+          if (confirm(`Remove "${cat.label}" category?`)) {
+            customCategories = customCategories.filter(c => c.id !== cat.id);
+            if (selectedCategory === cat.id) selectedCategory = customCategories[0].id;
+            saveCustomCategories();
+          }
+        };
+        container.appendChild(badge);
+      });
+    }
 
     // Load transactions from localStorage; starts completely fresh
     let transactions = JSON.parse(localStorage.getItem('ep_transactions') || '[]');
-    let selectedCategory = "FOOD_DINING";
     let currentAccountFilter = "ALL";
     let categoryChartInstance = null;
 
@@ -1069,42 +1187,32 @@
 
       const filteredExpenses = getFilteredTransactions().filter(t => t.type === 'EXPENSE');
 
-      const catTotals = {
-        'Food & Dining': 0,
-        'Vehicle & Capital': 0,
-        'Retail & Shopping': 0,
-        'Travel & Fuel': 0,
-        'Groceries': 0,
-        'Bills & Recharge': 0,
-        'Other': 0
-      };
+      const catTotals = {};
+      customCategories.forEach(c => {
+        catTotals[c.label] = 0;
+      });
 
       filteredExpenses.forEach(t => {
-        const act = t.action.toLowerCase();
-        if (act.includes('zomato') || act.includes('tiffans') || act.includes('vegis') || act.includes('mcdonalds') || act.includes('chay') || act.includes('chai') || act.includes('food')) {
-          catTotals['Food & Dining'] += t.amount;
-        } else if (act.includes('royal enfield') || act.includes('2787') || act.includes('akram')) {
-          catTotals['Vehicle & Capital'] += t.amount;
-        } else if (act.includes('flipkart') || act.includes('trent') || act.includes('furnishing') || act.includes('retail') || act.includes('shopping')) {
-          catTotals['Retail & Shopping'] += t.amount;
-        } else if (act.includes('petrol') || act.includes('redbus') || act.includes('railways') || act.includes('travel')) {
-          catTotals['Travel & Fuel'] += t.amount;
-        } else if (act.includes('blinkit') || act.includes('dudh') || act.includes('more mart') || act.includes('grocery')) {
-          catTotals['Groceries'] += t.amount;
-        } else if (act.includes('jio') || act.includes('spotify') || act.includes('youtube') || act.includes('bills')) {
-          catTotals['Bills & Recharge'] += t.amount;
-        } else {
-          catTotals['Other'] += t.amount;
+        let matched = customCategories.find(c => c.id === t.category);
+        if (!matched) {
+          const act = (t.action || '').toLowerCase();
+          matched = customCategories.find(c => act.includes(c.label.toLowerCase()) || act.includes(c.id.toLowerCase()));
         }
+        const label = matched ? matched.label : (customCategories[customCategories.length - 1]?.label || 'Other');
+        if (catTotals[label] === undefined) catTotals[label] = 0;
+        catTotals[label] += t.amount;
       });
 
       const totalVal = Object.values(catTotals).reduce((a, b) => a + b, 0);
 
+      const chartColors = [
+        '#111317', '#4B5563', '#2563EB', '#6366F1', '#059669', '#D97706', '#DC2626', '#9333EA', '#0891B2', '#475569'
+      ];
+
       if (categoryChartInstance) {
+        categoryChartInstance.data.labels = Object.keys(catTotals);
         categoryChartInstance.data.datasets[0].data = totalVal === 0 ? [1] : Object.values(catTotals);
-        categoryChartInstance.data.datasets[0].backgroundColor = totalVal === 0 ? ['#EAECEF'] : [
-          '#111317', '#4B5563', '#9CA3AF', '#2563EB', '#6366F1', '#059669', '#D1D5DB'
-        ];
+        categoryChartInstance.data.datasets[0].backgroundColor = totalVal === 0 ? ['#EAECEF'] : chartColors.slice(0, Object.keys(catTotals).length);
         categoryChartInstance.update('none');
       } else {
         categoryChartInstance = new Chart(ctx, {
@@ -1113,9 +1221,7 @@
             labels: Object.keys(catTotals),
             datasets: [{
               data: totalVal === 0 ? [1] : Object.values(catTotals),
-              backgroundColor: totalVal === 0 ? ['#EAECEF'] : [
-                '#111317', '#4B5563', '#9CA3AF', '#2563EB', '#6366F1', '#059669', '#D1D5DB'
-              ],
+              backgroundColor: totalVal === 0 ? ['#EAECEF'] : chartColors.slice(0, Object.keys(catTotals).length),
               borderWidth: 2,
               borderColor: '#ffffff'
             }]
@@ -1417,6 +1523,7 @@
 
     function openSettings() {
       renderAccountSelectors();
+      renderSettingsCategories();
       document.getElementById('monthlyBudgetInput').value = monthlyBudget;
       if (toggleShakeSetting) {
         toggleShakeSetting.checked = shakeEnabled;
@@ -1442,6 +1549,34 @@
       setTimeout(openSettings, 350);
     });
 
+    // Add category button in Settings
+    document.getElementById('btnAddCategory').addEventListener('click', () => {
+      const emoji = document.getElementById('newCatEmojiSelect').value;
+      const nameInput = document.getElementById('newCatNameInput');
+      const name = nameInput.value.trim();
+      if (!name) {
+        alert('Please enter a category name');
+        return;
+      }
+      const newId = name.toUpperCase().replace(/[^A-Z0-9]/g, '_') + '_' + Date.now().toString().slice(-4);
+      customCategories.push({
+        id: newId,
+        label: name,
+        icon: emoji
+      });
+      nameInput.value = '';
+      saveCustomCategories();
+    });
+
+    // Reset categories button in Settings
+    document.getElementById('btnResetCategories').addEventListener('click', () => {
+      if (confirm('Reset categories back to defaults?')) {
+        customCategories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+        selectedCategory = customCategories[0].id;
+        saveCustomCategories();
+      }
+    });
+
     // Clear All Data
     document.getElementById('btnClearAllData').addEventListener('click', () => {
       if (confirm('Are you sure you want to clear all transactions for a completely fresh start?')) {
@@ -1455,19 +1590,6 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-    // Category pills interaction
-    document.querySelectorAll('.cat-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.cat-btn').forEach(b => {
-          b.classList.remove('bg-white', 'text-[#090A0E]', 'active', 'font-bold');
-          b.classList.add('bg-white/[0.06]', 'text-[#C4C7D0]', 'font-medium');
-        });
-        btn.classList.remove('bg-white/[0.06]', 'text-[#C4C7D0]', 'font-medium');
-        btn.classList.add('bg-white', 'text-[#090A0E]', 'active', 'font-bold');
-        selectedCategory = btn.getAttribute('data-cat');
-      });
-    });
-
     // Search filter
     document.getElementById('searchInput').addEventListener('input', renderTransactions);
 
@@ -1475,7 +1597,7 @@
     // 1-TAP EDIT TRANSACTION MODAL LOGIC
     // ==========================================
     let currentEditingId = null;
-    let editSelectedCat = 'FOOD_DINING';
+    let editSelectedCat = customCategories[0]?.id || 'FOOD_DINING';
     let editSelectedBank = 'State Bank of India 7067';
 
     function openEditModal(id) {
@@ -1483,7 +1605,7 @@
       if (!tx) return;
 
       currentEditingId = id;
-      editSelectedCat = tx.category || 'OTHER';
+      editSelectedCat = tx.category || customCategories[0]?.id || 'OTHER';
       editSelectedBank = tx.bank || 'Cash';
 
       document.getElementById('editTxId').value = id;
@@ -1491,15 +1613,26 @@
       document.getElementById('editTxAction').value = tx.action;
       document.getElementById('editModalDate').innerText = `${tx.date} • ${tx.time || ''}`;
 
-      // Highlight selected category button in edit modal
-      document.querySelectorAll('.edit-cat-btn').forEach(btn => {
-        const cat = btn.getAttribute('data-cat');
-        if (cat === editSelectedCat) {
-          btn.className = 'edit-cat-btn py-2 px-2 rounded-xl text-xs font-bold border-2 border-[#111317] bg-[#111317] text-white flex items-center justify-center space-x-1';
-        } else {
-          btn.className = 'edit-cat-btn py-2 px-2 rounded-xl text-xs font-semibold border border-[#E3E6EB] bg-[#F8F9FA] text-[#454854] flex items-center justify-center space-x-1';
-        }
-      });
+      // Render dynamic category pills in edit modal
+      const editCatGrid = document.getElementById('editCategoryGrid');
+      if (editCatGrid) {
+        editCatGrid.innerHTML = '';
+        customCategories.forEach(cat => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          const isSelected = cat.id === editSelectedCat;
+          btn.className = isSelected 
+            ? 'edit-cat-btn py-2 px-2 rounded-xl text-xs font-bold border-2 border-[#111317] bg-[#111317] text-white flex items-center justify-center space-x-1 shadow-2xs'
+            : 'edit-cat-btn py-2 px-2 rounded-xl text-xs font-semibold border border-[#E3E6EB] bg-[#F8F9FA] text-[#454854] flex items-center justify-center space-x-1';
+          btn.setAttribute('data-cat', cat.id);
+          btn.innerHTML = `<span>${cat.icon}</span><span class="truncate max-w-[80px]">${cat.label}</span>`;
+          btn.onclick = () => {
+            editSelectedCat = cat.id;
+            openEditModal(id);
+          };
+          editCatGrid.appendChild(btn);
+        });
+      }
 
       // Render accounts in edit modal
       const accContainer = document.getElementById('editAccountContainer');
@@ -1528,17 +1661,6 @@
     }
 
     document.getElementById('btnCloseEditModal').addEventListener('click', closeEditModal);
-
-    // Edit Category selection clicks
-    document.querySelectorAll('.edit-cat-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        editSelectedCat = btn.getAttribute('data-cat');
-        document.querySelectorAll('.edit-cat-btn').forEach(b => {
-          b.className = 'edit-cat-btn py-2 px-2 rounded-xl text-xs font-semibold border border-[#E3E6EB] bg-[#F8F9FA] text-[#454854] flex items-center justify-center space-x-1';
-        });
-        btn.className = 'edit-cat-btn py-2 px-2 rounded-xl text-xs font-bold border-2 border-[#111317] bg-[#111317] text-white flex items-center justify-center space-x-1';
-      });
-    });
 
     // Save edited transaction
     document.getElementById('btnSaveTx').addEventListener('click', () => {
@@ -1709,6 +1831,8 @@
     }
 
     // Initial render
+    renderIslandCategories();
+    renderSettingsCategories();
     renderAccountSelectors();
     renderAll();
   </script>

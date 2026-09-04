@@ -955,6 +955,60 @@ fun SettingsTab(
             }
         }
 
+        // Manage Categories Section
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                shape = RoundedCornerShape(16.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE9EBEF))
+            ) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("🏷️ Active Categories", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color(0xFF111317))
+                    Text(
+                        "Categories used for automatic tagging, quick-logging, and spending analytics.",
+                        fontSize = 12.sp,
+                        color = Color(0xFF8C919E)
+                    )
+                    
+                    val allCategories = listOf(
+                        Category.FOOD_DINING,
+                        Category.GROCERIES,
+                        Category.FUEL_TRAVEL,
+                        Category.BILLS_RECHARGE,
+                        Category.SHOPPING,
+                        Category.CHAI_SNACKS,
+                        Category.CAPITAL_INVESTMENT,
+                        Category.OTHER
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            items(allCategories) { cat ->
+                                Surface(
+                                    color = Color(0xFFF5F6F8),
+                                    shape = RoundedCornerShape(10.dp),
+                                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE3E6EB))
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Text(cat.iconEmoji, fontSize = 13.sp)
+                                        Text(cat.displayName, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF111317))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         // Transferred Import Section: Inside Settings
         item {
             Card(
