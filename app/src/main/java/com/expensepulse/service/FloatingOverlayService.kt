@@ -150,8 +150,41 @@ class FloatingOverlayService : Service() {
         compactLayout?.visibility = View.GONE
         expandedLayout?.visibility = View.VISIBLE
 
+        fun selectCategoryInGroup(targetCat: Category) {
+            val count = rgCategories?.childCount ?: 0
+            for (i in 0 until count) {
+                val child = rgCategories?.getChildAt(i) as? RadioButton
+                if (child?.tag == targetCat) {
+                    child.isChecked = true
+                    break
+                }
+            }
+        }
+
         if (initialAmount.isNotEmpty()) etAmount?.setText(initialAmount)
-        if (initialMerchant.isNotEmpty()) etNote?.setText(initialMerchant)
+        if (initialMerchant.isNotEmpty()) {
+            etNote?.setText(initialMerchant)
+            val predicted = MerchantLearner.predict(this, initialMerchant)
+            if (predicted != null) {
+                selectCategoryInGroup(predicted)
+            }
+        }
+
+        // Live Merchant Learning Auto-Selection as user types note
+        etNote?.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val text = s?.toString()?.trim() ?: ""
+                if (text.length >= 2) {
+                    val predicted = MerchantLearner.predict(this@FloatingOverlayService, text)
+                        ?: Category.inferCategory(text, TransactionType.EXPENSE, this@FloatingOverlayService)
+                    if (predicted != Category.OTHER) {
+                        selectCategoryInGroup(predicted)
+                    }
+                }
+            }
+            override fun afterTextChanged(s: android.text.Editable?) {}
+        })
 
         // DYNAMIC CATEGORY POPULATION:
         // Dynamically reflect any customized names, emojis, or enabled categories from CategoryManager
@@ -226,6 +259,9 @@ class FloatingOverlayService : Service() {
             } else {
                 "Paid to ${categoryItem.displayName}"
             }
+
+            // Train Smart Merchant Learner
+            MerchantLearner.learn(this, merchant, category)
 
             val transaction = TransactionEntity(
                 amount = amount,

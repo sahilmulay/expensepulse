@@ -38,8 +38,10 @@ import com.expensepulse.ExpensePulseApplication
 import com.expensepulse.data.Category
 import com.expensepulse.data.CategoryItem
 import com.expensepulse.data.CategoryManager
+import com.expensepulse.data.MerchantLearner
 import com.expensepulse.data.TransactionEntity
 import com.expensepulse.data.TransactionType
+import com.expensepulse.export.CsvExporter
 import com.expensepulse.parser.GPayStatementParser
 import com.expensepulse.service.FloatingOverlayService
 import com.expensepulse.service.ShakeService
@@ -66,6 +68,7 @@ class MainActivity : ComponentActivity() {
             ExpensePulseTheme {
                 MainAppScreen(
                     onToggleShakeService = { enable -> toggleShakeService(enable) },
+                    onUpdateShakeSensitivity = { sensitivityG -> updateShakeSensitivity(sensitivityG) },
                     onRequestOverlayPermission = { requestOverlayPermission() },
                     onTriggerOverlayPreview = { triggerFloatingOverlay() },
                     repository = repository
@@ -84,6 +87,18 @@ class MainActivity : ComponentActivity() {
         } else {
             stopBackgroundShakeService()
             Toast.makeText(this, "Shake to Log deactivated", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun updateShakeSensitivity(sensitivityG: Float) {
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putFloat(KEY_SHAKE_SENSITIVITY, sensitivityG).apply()
+
+        if (prefs.getBoolean(KEY_SHAKE_ENABLED, false)) {
+            val serviceIntent = Intent(this, ShakeService::class.java).apply {
+                putExtra(ShakeService.EXTRA_SENSITIVITY, sensitivityG)
+            }
+            startService(serviceIntent)
         }
     }
 
@@ -124,6 +139,7 @@ class MainActivity : ComponentActivity() {
     companion object {
         const val PREFS_NAME = "expense_pulse_prefs"
         const val KEY_SHAKE_ENABLED = "shake_enabled"
+        const val KEY_SHAKE_SENSITIVITY = "shake_sensitivity"
         const val EXTRA_TRIGGER_QUICK_ADD = "extra_trigger_quick_add"
     }
 }
@@ -173,6 +189,7 @@ fun ExpensePulseTheme(content: @Composable () -> Unit) {
 @Composable
 fun MainAppScreen(
     onToggleShakeService: (Boolean) -> Unit,
+    onUpdateShakeSensitivity: (Float) -> Unit = {},
     onRequestOverlayPermission: () -> Unit,
     onTriggerOverlayPreview: () -> Unit,
     repository: com.expensepulse.data.ExpenseRepository
@@ -252,7 +269,7 @@ fun MainAppScreen(
                     selected = selectedTab == 0,
                     onClick = { selectedTab = 0 },
                     icon = { Icon(Icons.Default.Dashboard, contentDescription = "Dashboard") },
-                    label = { Text("Dashboard", fontWeight = if (selectedTab == 0) FontWeight.Bold else FontWeight.Medium) },
+                    label = { Text("Dashboard", fontWeight = if (selectedTab == 0) FontWeight.Bold else FontWeight.Normal) },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = MaterialTheme.colorScheme.primary,
                         selectedTextColor = MaterialTheme.colorScheme.primary,
@@ -265,7 +282,7 @@ fun MainAppScreen(
                     selected = selectedTab == 1,
                     onClick = { selectedTab = 1 },
                     icon = { Icon(Icons.Default.ReceiptLong, contentDescription = "Transactions") },
-                    label = { Text("Transactions", fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Medium) },
+                    label = { Text("Transactions", fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Normal) },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = MaterialTheme.colorScheme.primary,
                         selectedTextColor = MaterialTheme.colorScheme.primary,
@@ -278,7 +295,7 @@ fun MainAppScreen(
                     selected = selectedTab == 2,
                     onClick = { selectedTab = 2 },
                     icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
-                    label = { Text("Settings", fontWeight = if (selectedTab == 2) FontWeight.Bold else FontWeight.Medium) },
+                    label = { Text("Settings", fontWeight = if (selectedTab == 2) FontWeight.Bold else FontWeight.Normal) },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = MaterialTheme.colorScheme.primary,
                         selectedTextColor = MaterialTheme.colorScheme.primary,
@@ -316,6 +333,7 @@ fun MainAppScreen(
                 )
                 2 -> SettingsTab(
                     onToggleShake = onToggleShakeService,
+                    onUpdateSensitivity = onUpdateShakeSensitivity,
                     onRequestOverlay = onRequestOverlayPermission,
                     onTestOverlay = onTriggerOverlayPreview,
                     onImportText = { text ->
@@ -330,6 +348,7 @@ fun MainAppScreen(
                         }
                     },
                     categoryVersion = categoryVersion,
+                    allTransactions = transactions,
                     onCategoriesUpdated = { categoryVersion++ }
                 )
             }
@@ -889,7 +908,13 @@ fun EditTransactionDialog(
                     Spacer(modifier = Modifier.height(4.dp))
                     OutlinedTextField(
                         value = merchantText,
-                        onValueChange = { merchantText = it },
+                        onValueChange = {
+                            merchantText = it
+                            val predicted = MerchantLearner.predict(context, it)
+                            if (predicted != null) {
+                                selectedCategory = predicted
+                            }
+                        },
                         placeholder = { Text("e.g. Chai, Groceries, Zomato", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
@@ -947,6 +972,10 @@ fun EditTransactionDialog(
                     val amountVal = amountText.toDoubleOrNull() ?: transaction.amount
                     val currentCatItem = CategoryManager.getCategoryItem(context, selectedCategory)
                     val finalNote = merchantText.trim().ifEmpty { "Paid to ${currentCatItem.displayName}" }
+                    
+                    // Learn user's category association
+                    MerchantLearner.learn(context, finalNote, selectedCategory)
+
                     val updated = transaction.copy(
                         amount = amountVal,
                         merchantOrPerson = finalNote,
@@ -1128,11 +1157,13 @@ fun EditCategoryDialog(
 @Composable
 fun SettingsTab(
     onToggleShake: (Boolean) -> Unit,
+    onUpdateSensitivity: (Float) -> Unit = {},
     onRequestOverlay: () -> Unit,
     onTestOverlay: () -> Unit,
     onImportText: (String) -> Unit,
     onClearAllData: () -> Unit,
     categoryVersion: Int = 0,
+    allTransactions: List<TransactionEntity> = emptyList(),
     onCategoriesUpdated: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -1140,6 +1171,7 @@ fun SettingsTab(
     
     // Read persistent state from SharedPreferences so toggle NEVER resets on app close
     var shakeEnabled by remember { mutableStateOf(prefs.getBoolean(MainActivity.KEY_SHAKE_ENABLED, false)) }
+    var shakeSensitivity by remember { mutableStateOf(prefs.getFloat(MainActivity.KEY_SHAKE_SENSITIVITY, 2.7f)) }
     var statementInput by remember { mutableStateOf("") }
     var importStatus by remember { mutableStateOf<String?>(null) }
     var editingCategoryItem by remember { mutableStateOf<CategoryItem?>(null) }
@@ -1168,7 +1200,7 @@ fun SettingsTab(
             Text("⚙️ Settings & Gestures", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurface)
         }
 
-        // Shake Phone to Log Card with Persistent Toggle (Material 3 OutlinedCard)
+        // Shake Phone to Log Card with Persistent Toggle & Sensitivity Slider (Material 3 OutlinedCard)
         item {
             OutlinedCard(
                 modifier = Modifier.fillMaxWidth(),
@@ -1197,6 +1229,40 @@ fun SettingsTab(
                                 prefs.edit().putBoolean(MainActivity.KEY_SHAKE_ENABLED, isChecked).apply()
                                 onToggleShake(isChecked)
                             }
+                        )
+                    }
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
+                    // Custom Shake Sensitivity Slider
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("Shake Sensitivity", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+                            val sensitivityLabel = when {
+                                shakeSensitivity < 2.3f -> "Gentle (Sensitive)"
+                                shakeSensitivity > 3.1f -> "Firm (Vigorous)"
+                                else -> "Medium (Recommended)"
+                            }
+                            Text(sensitivityLabel, fontWeight = FontWeight.SemiBold, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+                        }
+                        Slider(
+                            value = shakeSensitivity,
+                            onValueChange = {
+                                shakeSensitivity = it
+                                prefs.edit().putFloat(MainActivity.KEY_SHAKE_SENSITIVITY, it).apply()
+                                onUpdateSensitivity(it)
+                            },
+                            valueRange = 1.8f..3.6f,
+                            steps = 2
+                        )
+                        Text(
+                            "Calibrate how firmly you need to shake your phone to trigger the pop-up.",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
 
@@ -1234,6 +1300,22 @@ fun SettingsTab(
                         ) {
                             Text("Launch Floating Quick-Add", fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         }
+                    }
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
+                    // Quick Settings Shade Tile Tip
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text("💡", fontSize = 16.sp)
+                        Text(
+                            "Quick Settings: Swipe down from top of your screen & edit your Quick Settings tiles to add the '⚡ Log Expense' button for 1-tap logging anywhere.",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
             }
@@ -1373,6 +1455,40 @@ fun SettingsTab(
 
                     importStatus?.let { status ->
                         Text(status, color = Color(0xFF059669), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    }
+                }
+            }
+        }
+
+        // Export Ledger (Excel / CSV) Section (Material 3 OutlinedCard)
+        item {
+            OutlinedCard(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface),
+                shape = RoundedCornerShape(20.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+            ) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("📊 Export Ledger (Excel / CSV)", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
+                    Text(
+                        "Export your entire transaction ledger as a .csv spreadsheet file to open in Microsoft Excel, Google Sheets, or share to Google Drive / WhatsApp.",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Button(
+                        onClick = {
+                            CsvExporter.exportTransactionsToCsv(context, allTransactions)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(100.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        )
+                    ) {
+                        Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Export to CSV / Excel Spreadsheet", fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
                 }
             }

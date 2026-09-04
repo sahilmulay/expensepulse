@@ -17,13 +17,19 @@ enum class Category(
     OTHER("Other", "📝", emptyList());
 
     companion object {
-        fun inferCategory(merchantName: String, transactionType: TransactionType): Category {
+        fun inferCategory(merchantName: String, transactionType: TransactionType, context: android.content.Context? = null): Category {
             if (transactionType == TransactionType.SELF_TRANSFER) {
                 return INTERNAL_TRANSFER
             }
             if (transactionType == TransactionType.SETTLEMENT) {
                 return FRIENDS_SPLIT
             }
+            // 1. Check Smart Learned Merchant Patterns First
+            if (context != null) {
+                val learned = MerchantLearner.predict(context, merchantName)
+                if (learned != null) return learned
+            }
+            // 2. Fallback to default keyword heuristics
             val lower = merchantName.lowercase()
             for (category in entries) {
                 if (category.defaultKeywords.any { lower.contains(it) }) {

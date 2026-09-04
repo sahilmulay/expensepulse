@@ -48,13 +48,27 @@ class ShakeService : Service() {
             }
         }
 
+        updateSensitivityFromPrefs()
         registerShakeListener()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.hasExtra(EXTRA_SENSITIVITY) == true) {
+            val threshold = intent.getFloatExtra(EXTRA_SENSITIVITY, 2.7f)
+            shakeDetector?.setSensitivity(threshold)
+        } else {
+            updateSensitivityFromPrefs()
+        }
+
         val notification = buildForegroundNotification()
         startForeground(NOTIFICATION_ID, notification)
         return START_STICKY
+    }
+
+    private fun updateSensitivityFromPrefs() {
+        val prefs = getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE)
+        val threshold = prefs.getFloat(MainActivity.KEY_SHAKE_SENSITIVITY, 2.7f)
+        shakeDetector?.setSensitivity(threshold)
     }
 
     private fun registerShakeListener() {
@@ -133,5 +147,6 @@ class ShakeService : Service() {
 
     companion object {
         const val NOTIFICATION_ID = 1001
+        const val EXTRA_SENSITIVITY = "extra_sensitivity"
     }
 }
