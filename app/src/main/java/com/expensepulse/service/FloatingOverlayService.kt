@@ -37,6 +37,7 @@ import com.expensepulse.ExpensePulseApplication
 import com.expensepulse.R
 import com.expensepulse.data.Category
 import com.expensepulse.data.CategoryManager
+import com.expensepulse.data.MerchantLearner
 import com.expensepulse.data.TransactionEntity
 import com.expensepulse.data.TransactionType
 import kotlinx.coroutines.CoroutineScope
