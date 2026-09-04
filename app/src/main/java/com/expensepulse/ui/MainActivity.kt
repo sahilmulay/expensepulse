@@ -12,10 +12,12 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -33,6 +35,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
 import com.expensepulse.ExpensePulseApplication
 import com.expensepulse.data.Category
+import com.expensepulse.data.CategoryItem
+import com.expensepulse.data.CategoryManager
 import com.expensepulse.data.TransactionEntity
 import com.expensepulse.data.TransactionType
 import com.expensepulse.parser.GPayStatementParser
@@ -148,6 +152,7 @@ fun MainAppScreen(
     repository: com.expensepulse.data.ExpenseRepository
 ) {
     var selectedTab by remember { mutableStateOf(0) }
+    var categoryVersion by remember { mutableStateOf(0) }
     val transactions by repository.allTransactions.collectAsState(initial = emptyList())
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -270,11 +275,13 @@ fun MainAppScreen(
             when (selectedTab) {
                 0 -> DashboardTab(
                     transactions = transactions,
-                    onEditTransaction = { editingTransaction = it }
+                    onEditTransaction = { editingTransaction = it },
+                    categoryVersion = categoryVersion
                 )
                 1 -> TransactionsTab(
                     transactions = transactions,
-                    onEditTransaction = { editingTransaction = it }
+                    onEditTransaction = { editingTransaction = it },
+                    categoryVersion = categoryVersion
                 )
                 2 -> SettingsTab(
                     onToggleShake = onToggleShakeService,
@@ -290,7 +297,9 @@ fun MainAppScreen(
                         coroutineScope.launch(Dispatchers.IO) {
                             repository.clearAllTransactions()
                         }
-                    }
+                    },
+                    categoryVersion = categoryVersion,
+                    onCategoriesUpdated = { categoryVersion++ }
                 )
             }
         }
@@ -300,23 +309,42 @@ fun MainAppScreen(
 @Composable
 fun DashboardTab(
     transactions: List<TransactionEntity>,
-    onEditTransaction: (TransactionEntity) -> Unit
+    onEditTransaction: (TransactionEntity) -> Unit,
+    categoryVersion: Int = 0
 ) {
-    val totalExpense = transactions
-        .filter { it.type == TransactionType.EXPENSE && !it.isExcludedFromAnalytics }
-        .sumOf { it.amount }
+    // Memoize aggregations for smooth, lag-free 60/120fps scrolling
+    val totalExpense = remember(transactions) {
+        transactions
+            .filter { it.type == TransactionType.EXPENSE && !it.isExcludedFromAnalytics }
+            .sumOf { it.amount }
+    }
 
-    val sbiExpense = transactions
-        .filter { it.type == TransactionType.EXPENSE && it.bankAccount.contains("State Bank", ignoreCase = true) }
-        .sumOf { it.amount }
+    val sbiExpense = remember(transactions) {
+        transactions
+            .filter { it.type == TransactionType.EXPENSE && it.bankAccount.contains("State Bank", ignoreCase = true) }
+            .sumOf { it.amount }
+    }
 
-    val ippbExpense = transactions
-        .filter { it.type == TransactionType.EXPENSE && it.bankAccount.contains("India Post", ignoreCase = true) }
-        .sumOf { it.amount }
+    val ippbExpense = remember(transactions) {
+        transactions
+            .filter { it.type == TransactionType.EXPENSE && it.bankAccount.contains("India Post", ignoreCase = true) }
+            .sumOf { it.amount }
+    }
 
-    val cashExpense = transactions
-        .filter { it.type == TransactionType.EXPENSE && it.bankAccount.contains("Cash", ignoreCase = true) }
-        .sumOf { it.amount }
+    val cashExpense = remember(transactions) {
+        transactions
+            .filter { it.type == TransactionType.EXPENSE && it.bankAccount.contains("Cash", ignoreCase = true) }
+            .sumOf { it.amount }
+    }
+
+    val categoryGroups = remember(transactions, categoryVersion) {
+        transactions
+            .filter { it.type == TransactionType.EXPENSE && !it.isExcludedFromAnalytics }
+            .groupBy { it.category }
+            .mapValues { it.value.sumOf { tx -> tx.amount } }
+            .toList()
+            .sortedByDescending { it.second }
+    }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
@@ -324,7 +352,7 @@ fun DashboardTab(
     ) {
         item {
             Spacer(modifier = Modifier.height(4.dp))
-            // Minimalist Total Outflow Card (Obsidian Slate) - Removed Received/Inflow as requested
+            // Minimalist Total Outflow Card (Obsidian Slate) - Removed Received/Inflow
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFF111317)),
@@ -453,12 +481,6 @@ fun DashboardTab(
         item {
             Text("Spending by Category", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color(0xFF111317))
             Spacer(modifier = Modifier.height(8.dp))
-            val categoryGroups = transactions
-                .filter { it.type == TransactionType.EXPENSE && !it.isExcludedFromAnalytics }
-                .groupBy { it.category }
-                .mapValues { it.value.sumOf { tx -> tx.amount } }
-                .toList()
-                .sortedByDescending { it.second }
 
             if (categoryGroups.isEmpty()) {
                 Card(
@@ -506,7 +528,7 @@ fun DashboardTab(
                 }
             }
         } else {
-            items(transactions.take(8)) { tx ->
+            items(transactions.take(8), key = { it.id }) { tx ->
                 TransactionListItem(
                     transaction = tx,
                     onClick = { onEditTransaction(tx) }
@@ -536,6 +558,9 @@ fun AccountCard(title: String, icon: String, spent: Double, modifier: Modifier =
 
 @Composable
 fun CategoryRow(category: Category, amount: Double, percentage: Double) {
+    val context = LocalContext.current
+    val categoryItem = remember(category) { CategoryManager.getCategoryItem(context, category) }
+
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(12.dp),
@@ -549,12 +574,12 @@ fun CategoryRow(category: Category, amount: Double, percentage: Double) {
                 modifier = Modifier.size(38.dp).clip(CircleShape).background(Color(0xFFF5F6F8)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(category.iconEmoji, fontSize = 18.sp)
+                Text(categoryItem.iconEmoji, fontSize = 18.sp)
             }
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(category.displayName, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = Color(0xFF111317))
+                    Text(categoryItem.displayName, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = Color(0xFF111317))
                     Text("₹ ${"%,.2f".format(amount)}", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color(0xFF111317))
                 }
                 Spacer(modifier = Modifier.height(4.dp))
@@ -572,22 +597,27 @@ fun CategoryRow(category: Category, amount: Double, percentage: Double) {
 @Composable
 fun TransactionsTab(
     transactions: List<TransactionEntity>,
-    onEditTransaction: (TransactionEntity) -> Unit
+    onEditTransaction: (TransactionEntity) -> Unit,
+    categoryVersion: Int = 0
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf("ALL") }
 
-    val filteredTransactions = transactions.filter { tx ->
-        val matchesQuery = tx.merchantOrPerson.contains(searchQuery, ignoreCase = true) ||
-                tx.amount.toString().contains(searchQuery)
-        val matchesAccount = when (selectedFilter) {
-            "ALL" -> true
-            "SBI" -> tx.bankAccount.contains("7067")
-            "IPPB" -> tx.bankAccount.contains("2938")
-            "CASH" -> tx.bankAccount.contains("Cash", ignoreCase = true)
-            else -> true
+    // Fast memoized filtering
+    val filteredTransactions = remember(transactions, searchQuery, selectedFilter) {
+        transactions.filter { tx ->
+            val matchesQuery = searchQuery.isBlank() ||
+                    tx.merchantOrPerson.contains(searchQuery, ignoreCase = true) ||
+                    tx.amount.toString().contains(searchQuery)
+            val matchesAccount = when (selectedFilter) {
+                "ALL" -> true
+                "SBI" -> tx.bankAccount.contains("7067")
+                "IPPB" -> tx.bankAccount.contains("2938")
+                "CASH" -> tx.bankAccount.contains("Cash", ignoreCase = true)
+                else -> true
+            }
+            matchesQuery && matchesAccount
         }
-        matchesQuery && matchesAccount
     }
 
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
@@ -648,7 +678,7 @@ fun TransactionsTab(
                     }
                 }
             } else {
-                items(filteredTransactions) { tx ->
+                items(filteredTransactions, key = { it.id }) { tx ->
                     TransactionListItem(
                         transaction = tx,
                         onClick = { onEditTransaction(tx) }
@@ -694,8 +724,9 @@ fun TransactionListItem(
         else -> "Cash"
     }
 
-    // Fix: Show Cash icon if paid via cash
-    val displayIcon = if (isCash && transaction.category == Category.OTHER) "💵" else transaction.category.iconEmoji
+    val context = LocalContext.current
+    val categoryItem = remember(transaction.category) { CategoryManager.getCategoryItem(context, transaction.category) }
+    val displayIcon = if (isCash && transaction.category == Category.OTHER) "💵" else categoryItem.iconEmoji
 
     Card(
         modifier = Modifier
@@ -761,19 +792,15 @@ fun EditTransactionDialog(
     onSave: (TransactionEntity) -> Unit,
     onDelete: (TransactionEntity) -> Unit
 ) {
-    var amountText by remember { mutableStateOf(transaction.amount.toString()) }
+    val context = LocalContext.current
+    var amountText by remember { mutableStateOf(if (transaction.amount % 1.0 == 0.0) transaction.amount.toInt().toString() else transaction.amount.toString()) }
     var merchantText by remember { mutableStateOf(transaction.merchantOrPerson) }
     var selectedCategory by remember { mutableStateOf(transaction.category) }
     var selectedBank by remember { mutableStateOf(transaction.bankAccount) }
 
-    val categories = listOf(
-        Category.FOOD_DINING,
-        Category.GROCERIES,
-        Category.FUEL_TRAVEL,
-        Category.BILLS_RECHARGE,
-        Category.SHOPPING,
-        Category.OTHER
-    )
+    val activeCategoryItems = remember {
+        CategoryManager.getCategories(context).filter { it.isEnabled }
+    }
 
     val banks = listOf(
         "State Bank of India 7067",
@@ -839,12 +866,15 @@ fun EditTransactionDialog(
                 Column {
                     Text("Category", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF8C919E))
                     Spacer(modifier = Modifier.height(4.dp))
-                    LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        items(categories) { cat ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        activeCategoryItems.forEach { catItem ->
                             FilterChip(
-                                selected = selectedCategory == cat,
-                                onClick = { selectedCategory = cat },
-                                label = { Text("${cat.iconEmoji} ${cat.displayName}", fontSize = 11.sp) },
+                                selected = selectedCategory == catItem.enumCategory,
+                                onClick = { selectedCategory = catItem.enumCategory },
+                                label = { Text("${catItem.iconEmoji} ${catItem.displayName}", fontSize = 11.sp) },
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = Color(0xFF111317),
                                     selectedLabelColor = Color.White
@@ -858,8 +888,11 @@ fun EditTransactionDialog(
                 Column {
                     Text("Account", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF8C919E))
                     Spacer(modifier = Modifier.height(4.dp))
-                    LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        items(banks) { bank ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        banks.forEach { bank ->
                             val label = if (bank.contains("7067")) "SBI 7067" else if (bank.contains("2938")) "IPPB 2938" else "Cash"
                             FilterChip(
                                 selected = selectedBank == bank,
@@ -879,7 +912,8 @@ fun EditTransactionDialog(
             Button(
                 onClick = {
                     val amountVal = amountText.toDoubleOrNull() ?: transaction.amount
-                    val finalNote = merchantText.trim().ifEmpty { "Paid to ${selectedCategory.displayName}" }
+                    val currentCatItem = CategoryManager.getCategoryItem(context, selectedCategory)
+                    val finalNote = merchantText.trim().ifEmpty { "Paid to ${currentCatItem.displayName}" }
                     val updated = transaction.copy(
                         amount = amountVal,
                         merchantOrPerson = finalNote,
@@ -911,21 +945,174 @@ fun EditTransactionDialog(
     )
 }
 
+// Interactive Category Customization Dialog
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EditCategoryDialog(
+    categoryItem: CategoryItem,
+    onDismiss: () -> Unit,
+    onSave: (CategoryItem) -> Unit
+) {
+    var nameText by remember { mutableStateOf(categoryItem.displayName) }
+    var emojiText by remember { mutableStateOf(categoryItem.iconEmoji) }
+    var isEnabled by remember { mutableStateOf(categoryItem.isEnabled) }
+
+    val quickEmojis = listOf("🍔", "☕", "🛒", "🛵", "⚡", "🛍️", "🤝", "🏍️", "🍿", "💊", "📚", "🎮", "💻", "✈️", "👔", "🏠", "🏋️", "🎬", "🎁", "📝")
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Customize Category", fontWeight = FontWeight.Bold, fontSize = 17.sp, color = Color(0xFF111317))
+                IconButton(onClick = onDismiss, modifier = Modifier.size(28.dp)) {
+                    Icon(Icons.Default.Close, contentDescription = "Close", tint = Color(0xFF8C919E), modifier = Modifier.size(18.dp))
+                }
+            }
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                // Category Emoji & Quick Picker
+                Column {
+                    Text("Category Icon / Emoji", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF8C919E))
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = emojiText,
+                            onValueChange = { if (it.length <= 4) emojiText = it },
+                            modifier = Modifier.width(68.dp),
+                            singleLine = true,
+                            shape = RoundedCornerShape(10.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Color(0xFF111317),
+                                unfocusedBorderColor = Color(0xFFE3E6EB)
+                            )
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            quickEmojis.forEach { emoji ->
+                                Surface(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .clickable { emojiText = emoji }
+                                        .border(1.dp, if (emojiText == emoji) Color(0xFF111317) else Color(0xFFE3E6EB), RoundedCornerShape(8.dp)),
+                                    color = if (emojiText == emoji) Color(0xFFEAECEF) else Color(0xFFF5F6F8)
+                                ) {
+                                    Text(emoji, fontSize = 16.sp, modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp))
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Category Name
+                Column {
+                    Text("Category Name", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF8C919E))
+                    Spacer(modifier = Modifier.height(4.dp))
+                    OutlinedTextField(
+                        value = nameText,
+                        onValueChange = { nameText = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        shape = RoundedCornerShape(10.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFF111317),
+                            unfocusedBorderColor = Color(0xFFE3E6EB)
+                        )
+                    )
+                }
+
+                // Active toggle
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text("Show in Quick Select", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color(0xFF111317))
+                        Text("Enable for spending tags & quick entry", fontSize = 11.sp, color = Color(0xFF8C919E))
+                    }
+                    Switch(
+                        checked = isEnabled,
+                        onCheckedChange = { isEnabled = it },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = Color(0xFF111317),
+                            uncheckedThumbColor = Color.White,
+                            uncheckedTrackColor = Color(0xFFD6D9E0)
+                        )
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    val finalName = nameText.trim().ifEmpty { categoryItem.displayName }
+                    val finalEmoji = emojiText.trim().ifEmpty { categoryItem.iconEmoji }
+                    onSave(categoryItem.copy(displayName = finalName, iconEmoji = finalEmoji, isEnabled = isEnabled))
+                    onDismiss()
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF111317)),
+                shape = RoundedCornerShape(10.dp)
+            ) {
+                Text("Save Category", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel", color = Color(0xFF111317), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+            }
+        },
+        containerColor = Color.White,
+        shape = RoundedCornerShape(18.dp)
+    )
+}
+
 @Composable
 fun SettingsTab(
     onToggleShake: (Boolean) -> Unit,
     onRequestOverlay: () -> Unit,
     onTestOverlay: () -> Unit,
     onImportText: (String) -> Unit,
-    onClearAllData: () -> Unit
+    onClearAllData: () -> Unit,
+    categoryVersion: Int = 0,
+    onCategoriesUpdated: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE) }
     
-    // Fix: Read persistent state from SharedPreferences so toggle NEVER resets on app close
+    // Read persistent state from SharedPreferences so toggle NEVER resets on app close
     var shakeEnabled by remember { mutableStateOf(prefs.getBoolean(MainActivity.KEY_SHAKE_ENABLED, false)) }
     var statementInput by remember { mutableStateOf("") }
     var importStatus by remember { mutableStateOf<String?>(null) }
+    var editingCategoryItem by remember { mutableStateOf<CategoryItem?>(null) }
+
+    val categories = remember(categoryVersion) { CategoryManager.getCategories(context) }
+
+    if (editingCategoryItem != null) {
+        EditCategoryDialog(
+            categoryItem = editingCategoryItem!!,
+            onDismiss = { editingCategoryItem = null },
+            onSave = { updatedItem ->
+                val updatedList = categories.map { if (it.key == updatedItem.key) updatedItem else it }
+                CategoryManager.saveCategories(context, updatedList)
+                onCategoriesUpdated()
+                Toast.makeText(context, "Category updated!", Toast.LENGTH_SHORT).show()
+            }
+        )
+    }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
@@ -1015,7 +1202,7 @@ fun SettingsTab(
             }
         }
 
-        // Manage Categories Section
+        // Interactive Category Customization Card
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -1023,46 +1210,75 @@ fun SettingsTab(
                 shape = RoundedCornerShape(16.dp),
                 border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE9EBEF))
             ) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("🏷️ Active Categories", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color(0xFF111317))
-                    Text(
-                        "Categories used for automatic tagging, quick-logging, and spending analytics.",
-                        fontSize = 12.sp,
-                        color = Color(0xFF8C919E)
-                    )
-                    
-                    val allCategories = listOf(
-                        Category.FOOD_DINING,
-                        Category.GROCERIES,
-                        Category.FUEL_TRAVEL,
-                        Category.BILLS_RECHARGE,
-                        Category.SHOPPING,
-                        Category.CHAI_SNACKS,
-                        Category.CAPITAL_INVESTMENT,
-                        Category.OTHER
-                    )
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text("🏷️ Category Customization", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color(0xFF111317))
+                            Text("Tap any category to rename, change emoji, or enable/disable", fontSize = 11.sp, color = Color(0xFF8C919E))
+                        }
+                    }
+
+                    // Clickable list of categories
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        categories.forEach { cat ->
+                            Surface(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .clickable { editingCategoryItem = cat },
+                                color = if (cat.isEnabled) Color(0xFFF5F6F8) else Color(0xFFFAFAFA),
+                                border = androidx.compose.foundation.BorderStroke(
+                                    1.dp,
+                                    if (cat.isEnabled) Color(0xFFE3E6EB) else Color(0xFFF0F0F0)
+                                )
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Text(cat.iconEmoji, fontSize = 16.sp)
+                                        Text(
+                                            cat.displayName,
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = if (cat.isEnabled) Color(0xFF111317) else Color(0xFF8C919E)
+                                        )
+                                        if (!cat.isEnabled) {
+                                            Text("(Disabled)", fontSize = 10.sp, color = Color(0xFF8C919E))
+                                        }
+                                    }
+                                    Icon(
+                                        Icons.Default.Edit,
+                                        contentDescription = "Edit",
+                                        tint = Color(0xFF8C919E),
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        horizontalArrangement = Arrangement.End
                     ) {
-                        LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            items(allCategories) { cat ->
-                                Surface(
-                                    color = Color(0xFFF5F6F8),
-                                    shape = RoundedCornerShape(10.dp),
-                                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE3E6EB))
-                                ) {
-                                    Row(
-                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                    ) {
-                                        Text(cat.iconEmoji, fontSize = 13.sp)
-                                        Text(cat.displayName, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF111317))
-                                    }
-                                }
+                        TextButton(
+                            onClick = {
+                                CategoryManager.resetDefaults(context)
+                                onCategoriesUpdated()
+                                Toast.makeText(context, "Reset to default categories", Toast.LENGTH_SHORT).show()
                             }
+                        ) {
+                            Text("Reset Default Categories", color = Color(0xFF8C919E), fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }

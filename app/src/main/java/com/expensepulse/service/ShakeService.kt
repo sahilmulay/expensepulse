@@ -8,7 +8,10 @@ import android.content.Intent
 import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.os.Build
+import android.os.Handler
+import android.os.HandlerThread
 import android.os.IBinder
+import android.os.Looper
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
@@ -23,6 +26,9 @@ class ShakeService : Service() {
     private var sensorManager: SensorManager? = null
     private var accelerometer: Sensor? = null
     private var shakeDetector: ShakeDetector? = null
+    private var sensorThread: HandlerThread? = null
+    private var sensorHandler: Handler? = null
+    private val mainHandler = Handler(Looper.getMainLooper())
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -31,8 +37,15 @@ class ShakeService : Service() {
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         accelerometer = sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
+        // Offload accelerometer processing completely to a background thread
+        // to prevent any UI thread frame drops / lag
+        sensorThread = HandlerThread("ShakeSensorThread").apply { start() }
+        sensorHandler = Handler(sensorThread!!.looper)
+
         shakeDetector = ShakeDetector {
-            handleShakeDetected()
+            mainHandler.post {
+                handleShakeDetected()
+            }
         }
 
         registerShakeListener()
@@ -49,7 +62,8 @@ class ShakeService : Service() {
             sensorManager?.registerListener(
                 shakeDetector,
                 sensor,
-                SensorManager.SENSOR_DELAY_UI
+                SensorManager.SENSOR_DELAY_NORMAL,
+                sensorHandler
             )
         }
     }
@@ -111,6 +125,9 @@ class ShakeService : Service() {
 
     override fun onDestroy() {
         sensorManager?.unregisterListener(shakeDetector)
+        sensorThread?.quitSafely()
+        sensorThread = null
+        sensorHandler = null
         super.onDestroy()
     }
 
