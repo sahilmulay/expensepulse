@@ -150,6 +150,33 @@ fun MainAppScreen(
     var selectedTab by remember { mutableStateOf(0) }
     val transactions by repository.allTransactions.collectAsState(initial = emptyList())
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+
+    // State for editing transaction
+    var editingTransaction by remember { mutableStateOf<TransactionEntity?>(null) }
+
+    if (editingTransaction != null) {
+        EditTransactionDialog(
+            transaction = editingTransaction!!,
+            onDismiss = { editingTransaction = null },
+            onSave = { updated ->
+                coroutineScope.launch(Dispatchers.IO) {
+                    repository.update(updated)
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "Expense updated!", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            },
+            onDelete = { toDelete ->
+                coroutineScope.launch(Dispatchers.IO) {
+                    repository.delete(toDelete)
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "Expense deleted", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -241,8 +268,14 @@ fun MainAppScreen(
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues).fillMaxSize().background(Color(0xFFF5F6F8))) {
             when (selectedTab) {
-                0 -> DashboardTab(transactions = transactions)
-                1 -> TransactionsTab(transactions = transactions)
+                0 -> DashboardTab(
+                    transactions = transactions,
+                    onEditTransaction = { editingTransaction = it }
+                )
+                1 -> TransactionsTab(
+                    transactions = transactions,
+                    onEditTransaction = { editingTransaction = it }
+                )
                 2 -> SettingsTab(
                     onToggleShake = onToggleShakeService,
                     onRequestOverlay = onRequestOverlayPermission,
@@ -265,13 +298,12 @@ fun MainAppScreen(
 }
 
 @Composable
-fun DashboardTab(transactions: List<TransactionEntity>) {
+fun DashboardTab(
+    transactions: List<TransactionEntity>,
+    onEditTransaction: (TransactionEntity) -> Unit
+) {
     val totalExpense = transactions
         .filter { it.type == TransactionType.EXPENSE && !it.isExcludedFromAnalytics }
-        .sumOf { it.amount }
-
-    val totalIncome = transactions
-        .filter { (it.type == TransactionType.INCOME || it.type == TransactionType.SETTLEMENT) && !it.isExcludedFromAnalytics }
         .sumOf { it.amount }
 
     val sbiExpense = transactions
@@ -292,32 +324,39 @@ fun DashboardTab(transactions: List<TransactionEntity>) {
     ) {
         item {
             Spacer(modifier = Modifier.height(4.dp))
-            // Minimalist Total Outflow Card (Obsidian Slate)
+            // Minimalist Total Outflow Card (Obsidian Slate) - Removed Received/Inflow as requested
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFF111317)),
                 shape = RoundedCornerShape(20.dp)
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
-                    Text("Total Outflow", color = Color(0xFF8C919E), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Total Outflow", color = Color(0xFF8C919E), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                        Text("Excludes self-transfers", color = Color(0xFF6B7280), fontSize = 10.sp)
+                    }
                     Text(
                         "₹ ${"%,.2f".format(totalExpense)}",
                         color = Color.White,
-                        fontSize = 30.sp,
+                        fontSize = 32.sp,
                         fontWeight = FontWeight.ExtraBold
                     )
-                    Spacer(modifier = Modifier.height(14.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column {
-                            Text("Received / Inflow", color = Color(0xFF8C919E), fontSize = 11.sp)
-                            Text("₹ ${"%,.2f".format(totalIncome)}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp)
-                        }
-                        Column(horizontalAlignment = Alignment.End) {
-                            Text("Transactions", color = Color(0xFF8C919E), fontSize = 11.sp)
-                            Text("${transactions.size} items", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                        Text("${transactions.size} transactions logged", color = Color(0xFF8C919E), fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                        Surface(
+                            color = Color(0xFF1F232B),
+                            shape = RoundedCornerShape(20.dp)
+                        ) {
+                            Text("Multi-Account", color = Color(0xFFE5E7EB), fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp))
                         }
                     }
                 }
@@ -381,9 +420,16 @@ fun DashboardTab(transactions: List<TransactionEntity>) {
             }
         }
 
-        // Recent Activity preview
+        // Recent Activity preview with 1-Tap Edit Option
         item {
-            Text("Recent Transactions", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color(0xFF111317))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Recent Transactions", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color(0xFF111317))
+                Text("Tap to edit", fontSize = 11.sp, color = Color(0xFF8C919E))
+            }
             Spacer(modifier = Modifier.height(4.dp))
         }
 
@@ -401,7 +447,10 @@ fun DashboardTab(transactions: List<TransactionEntity>) {
             }
         } else {
             items(transactions.take(8)) { tx ->
-                TransactionListItem(transaction = tx)
+                TransactionListItem(
+                    transaction = tx,
+                    onClick = { onEditTransaction(tx) }
+                )
             }
         }
         item { Spacer(modifier = Modifier.height(80.dp)) }
@@ -461,7 +510,10 @@ fun CategoryRow(category: Category, amount: Double, percentage: Double) {
 }
 
 @Composable
-fun TransactionsTab(transactions: List<TransactionEntity>) {
+fun TransactionsTab(
+    transactions: List<TransactionEntity>,
+    onEditTransaction: (TransactionEntity) -> Unit
+) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf("ALL") }
 
@@ -537,7 +589,10 @@ fun TransactionsTab(transactions: List<TransactionEntity>) {
                 }
             } else {
                 items(filteredTransactions) { tx ->
-                    TransactionListItem(transaction = tx)
+                    TransactionListItem(
+                        transaction = tx,
+                        onClick = { onEditTransaction(tx) }
+                    )
                 }
             }
             item { Spacer(modifier = Modifier.height(80.dp)) }
@@ -546,7 +601,10 @@ fun TransactionsTab(transactions: List<TransactionEntity>) {
 }
 
 @Composable
-fun TransactionListItem(transaction: TransactionEntity) {
+fun TransactionListItem(
+    transaction: TransactionEntity,
+    onClick: () -> Unit = {}
+) {
     val isExpense = transaction.type == TransactionType.EXPENSE
     val isTransfer = transaction.type == TransactionType.SELF_TRANSFER
     val isSettlement = transaction.type == TransactionType.SETTLEMENT
@@ -580,7 +638,9 @@ fun TransactionListItem(transaction: TransactionEntity) {
     val displayIcon = if (isCash && transaction.category == Category.OTHER) "💵" else transaction.category.iconEmoji
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(14.dp),
         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE9EBEF))
@@ -630,6 +690,165 @@ fun TransactionListItem(transaction: TransactionEntity) {
             }
         }
     }
+}
+
+// 1-Tap Edit & Delete Expense Dialog for Android Native
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EditTransactionDialog(
+    transaction: TransactionEntity,
+    onDismiss: () -> Unit,
+    onSave: (TransactionEntity) -> Unit,
+    onDelete: (TransactionEntity) -> Unit
+) {
+    var amountText by remember { mutableStateOf(transaction.amount.toString()) }
+    var merchantText by remember { mutableStateOf(transaction.merchantOrPerson) }
+    var selectedCategory by remember { mutableStateOf(transaction.category) }
+    var selectedBank by remember { mutableStateOf(transaction.bankAccount) }
+
+    val categories = listOf(
+        Category.FOOD_DINING,
+        Category.GROCERIES,
+        Category.FUEL_TRAVEL,
+        Category.BILLS_RECHARGE,
+        Category.SHOPPING,
+        Category.OTHER
+    )
+
+    val banks = listOf(
+        "State Bank of India 7067",
+        "India Post Payment Bank 2938",
+        "Cash"
+    )
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Edit Expense", fontWeight = FontWeight.Bold, fontSize = 17.sp, color = Color(0xFF111317))
+                IconButton(onClick = onDismiss, modifier = Modifier.size(28.dp)) {
+                    Icon(Icons.Default.Close, contentDescription = "Close", tint = Color(0xFF8C919E), modifier = Modifier.size(18.dp))
+                }
+            }
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // Amount Input
+                Column {
+                    Text("Amount (₹)", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF8C919E))
+                    Spacer(modifier = Modifier.height(4.dp))
+                    OutlinedTextField(
+                        value = amountText,
+                        onValueChange = { amountText = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        shape = RoundedCornerShape(10.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFF111317),
+                            unfocusedBorderColor = Color(0xFFE3E6EB)
+                        )
+                    )
+                }
+
+                // Note / Merchant Input
+                Column {
+                    Text("Note / Merchant", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF8C919E))
+                    Spacer(modifier = Modifier.height(4.dp))
+                    OutlinedTextField(
+                        value = merchantText,
+                        onValueChange = { merchantText = it },
+                        placeholder = { Text("e.g. Chai, Groceries, Zomato", fontSize = 12.sp) },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        shape = RoundedCornerShape(10.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFF111317),
+                            unfocusedBorderColor = Color(0xFFE3E6EB)
+                        )
+                    )
+                }
+
+                // Category Selection
+                Column {
+                    Text("Category", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF8C919E))
+                    Spacer(modifier = Modifier.height(4.dp))
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        items(categories) { cat ->
+                            FilterChip(
+                                selected = selectedCategory == cat,
+                                onClick = { selectedCategory = cat },
+                                label = { Text("${cat.iconEmoji} ${cat.displayName}", fontSize = 11.sp) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = Color(0xFF111317),
+                                    selectedLabelColor = Color.White
+                                )
+                            )
+                        }
+                    }
+                }
+
+                // Bank Account Selection
+                Column {
+                    Text("Account", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF8C919E))
+                    Spacer(modifier = Modifier.height(4.dp))
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        items(banks) { bank ->
+                            val label = if (bank.contains("7067")) "SBI 7067" else if (bank.contains("2938")) "IPPB 2938" else "Cash"
+                            FilterChip(
+                                selected = selectedBank == bank,
+                                onClick = { selectedBank = bank },
+                                label = { Text(label, fontSize = 11.sp) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = Color(0xFF111317),
+                                    selectedLabelColor = Color.White
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    val amountVal = amountText.toDoubleOrNull() ?: transaction.amount
+                    val finalNote = merchantText.trim().ifEmpty { "Paid to ${selectedCategory.displayName}" }
+                    val updated = transaction.copy(
+                        amount = amountVal,
+                        merchantOrPerson = finalNote,
+                        note = finalNote,
+                        category = selectedCategory,
+                        bankAccount = selectedBank
+                    )
+                    onSave(updated)
+                    onDismiss()
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF111317)),
+                shape = RoundedCornerShape(10.dp)
+            ) {
+                Text("Save Changes", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    onDelete(transaction)
+                    onDismiss()
+                }
+            ) {
+                Text("Delete", color = Color(0xFFDC2626), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+            }
+        },
+        containerColor = Color.White,
+        shape = RoundedCornerShape(18.dp)
+    )
 }
 
 @Composable

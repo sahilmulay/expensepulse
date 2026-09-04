@@ -307,15 +307,11 @@
           </span>
         </div>
 
-        <div class="grid grid-cols-2 gap-3 mt-4 pt-3.5 border-t border-white/10">
-          <div>
-            <div class="text-[11px] text-[#8C919E]">Received / Inflow</div>
-            <div class="text-sm font-bold text-white mt-0.5 truncate" id="totalRecvDisplay">₹ 0.00</div>
+        <div class="flex justify-between items-center mt-4 pt-3.5 border-t border-white/10">
+          <div class="text-xs text-[#8C919E]">
+            <span id="txCountDisplay" class="font-bold text-white">0 items</span> logged
           </div>
-          <div>
-            <div class="text-[11px] text-[#8C919E]">Transactions</div>
-            <div class="text-sm font-bold text-white mt-0.5" id="txCountDisplay">0 items</div>
-          </div>
+          <span class="text-[10px] bg-white/10 text-white/90 px-2.5 py-0.5 rounded-full font-medium">Real-time</span>
         </div>
       </div>
 
@@ -485,6 +481,91 @@
           <button id="btnLoadAugustSample" class="w-full bg-[#F5F6F8] hover:bg-[#EAECEF] text-[#454854] font-semibold py-2 rounded-xl text-xs transition flex items-center justify-center space-x-1.5">
             <i class="fa-solid fa-clock-rotate-left text-[11px]"></i>
             <span>Load August 2026 Sample Statement (100 txns)</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- EDIT TRANSACTION MODAL -->
+    <div id="editTransactionModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center hidden p-4">
+      <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl border border-[#E9EBEF] space-y-4 max-h-[90vh] overflow-y-auto animate-in fade-in slide-in-from-bottom duration-200">
+        
+        <!-- Header -->
+        <div class="flex justify-between items-center border-b border-[#F0F2F5] pb-3">
+          <div class="flex items-center space-x-2">
+            <div class="w-8 h-8 rounded-xl bg-[#111317] text-white flex items-center justify-center text-xs">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </div>
+            <div>
+              <h2 class="text-sm font-bold text-[#111317]">Edit Expense</h2>
+              <p class="text-[11px] text-[#8C919E]" id="editModalDate">Transaction Details</p>
+            </div>
+          </div>
+          <button id="btnCloseEditModal" class="w-7 h-7 rounded-full bg-[#F5F6F8] hover:bg-[#EAECEF] flex items-center justify-center text-[#60646F] text-xs">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <input type="hidden" id="editTxId">
+
+        <!-- Amount Input -->
+        <div class="space-y-1">
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-[#8C919E]">Amount (₹)</label>
+          <div class="relative">
+            <span class="absolute left-3.5 top-2.5 text-base font-bold text-[#111317]">₹</span>
+            <input type="number" step="0.01" id="editTxAmount" class="w-full bg-[#F8F9FA] border border-[#D6D9E0] rounded-xl pl-8 pr-3 py-2.5 text-base font-bold text-[#111317] focus:outline-none focus:border-[#111317]">
+          </div>
+        </div>
+
+        <!-- Merchant / Note Input -->
+        <div class="space-y-1">
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-[#8C919E]">Merchant / Note</label>
+          <input type="text" id="editTxAction" class="w-full bg-[#F8F9FA] border border-[#D6D9E0] rounded-xl px-3.5 py-2.5 text-xs text-[#111317] focus:outline-none focus:border-[#111317]">
+        </div>
+
+        <!-- Category Picker -->
+        <div class="space-y-1.5">
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-[#8C919E]">Category</label>
+          <div class="grid grid-cols-3 gap-2" id="editCategoryGrid">
+            <button type="button" class="edit-cat-btn py-2 px-2 rounded-xl text-xs font-semibold border flex items-center justify-center space-x-1" data-cat="FOOD_DINING">
+              <span>🍔</span><span>Food</span>
+            </button>
+            <button type="button" class="edit-cat-btn py-2 px-2 rounded-xl text-xs font-semibold border flex items-center justify-center space-x-1" data-cat="GROCERIES">
+              <span>🛒</span><span>Grocery</span>
+            </button>
+            <button type="button" class="edit-cat-btn py-2 px-2 rounded-xl text-xs font-semibold border flex items-center justify-center space-x-1" data-cat="FUEL_TRAVEL">
+              <span>🛵</span><span>Travel</span>
+            </button>
+            <button type="button" class="edit-cat-btn py-2 px-2 rounded-xl text-xs font-semibold border flex items-center justify-center space-x-1" data-cat="BILLS_RECHARGE">
+              <span>⚡</span><span>Bills</span>
+            </button>
+            <button type="button" class="edit-cat-btn py-2 px-2 rounded-xl text-xs font-semibold border flex items-center justify-center space-x-1" data-cat="SHOPPING">
+              <span>🛍️</span><span>Retail</span>
+            </button>
+            <button type="button" class="edit-cat-btn py-2 px-2 rounded-xl text-xs font-semibold border flex items-center justify-center space-x-1" data-cat="OTHER">
+              <span>📝</span><span>Other</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Account Picker -->
+        <div class="space-y-1.5">
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-[#8C919E]">Account</label>
+          <div class="flex flex-wrap gap-2" id="editAccountContainer">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="pt-2 flex space-x-2">
+          <button id="btnDeleteTx" class="w-1/3 bg-red-50 hover:bg-red-100 text-red-600 font-bold py-2.5 rounded-xl text-xs transition active:scale-95 flex items-center justify-center space-x-1">
+            <i class="fa-solid fa-trash-can"></i>
+            <span>Delete</span>
+          </button>
+          <button id="btnSaveTx" class="w-2/3 bg-[#111317] hover:bg-[#252830] text-white font-bold py-2.5 rounded-xl text-xs transition active:scale-95 flex items-center justify-center space-x-1">
+            <i class="fa-solid fa-check"></i>
+            <span>Save Changes</span>
           </button>
         </div>
 
@@ -908,7 +989,8 @@
         const bankTag = t.bank.includes('7067') ? 'SBI 7067' : t.bank.includes('2938') ? 'IPPB 2938' : t.bank;
 
         const item = document.createElement('div');
-        item.className = 'bg-white p-3.5 rounded-xl border border-[#E9EBEF] flex items-center justify-between hover:border-[#D6D9E0] transition';
+        item.className = 'bg-white p-3.5 rounded-xl border border-[#E9EBEF] flex items-center justify-between hover:border-[#111317] hover:shadow-xs cursor-pointer transition active:scale-[0.99]';
+        item.onclick = () => openEditModal(t.id);
         item.innerHTML = `
           <div class="flex items-center space-x-3 min-w-0 flex-1 mr-2">
             <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs shrink-0 ${iconBg}">
@@ -920,6 +1002,8 @@
                 <span>${t.date}</span>
                 <span>•</span>
                 <span class="font-medium text-[#60646F] truncate">${bankTag}</span>
+                <span>•</span>
+                <span class="text-[#2563EB] font-bold">Edit</span>
               </div>
             </div>
           </div>
@@ -1387,7 +1471,113 @@
     // Search filter
     document.getElementById('searchInput').addEventListener('input', renderTransactions);
 
-    // DUAL-SENSOR (ACCELEROMETER + GYROSCOPE) DELIBERATE SHAKE DETECTION
+    // ==========================================
+    // 1-TAP EDIT TRANSACTION MODAL LOGIC
+    // ==========================================
+    let currentEditingId = null;
+    let editSelectedCat = 'FOOD_DINING';
+    let editSelectedBank = 'State Bank of India 7067';
+
+    function openEditModal(id) {
+      const tx = transactions.find(t => t.id === id);
+      if (!tx) return;
+
+      currentEditingId = id;
+      editSelectedCat = tx.category || 'OTHER';
+      editSelectedBank = tx.bank || 'Cash';
+
+      document.getElementById('editTxId').value = id;
+      document.getElementById('editTxAmount').value = tx.amount;
+      document.getElementById('editTxAction').value = tx.action;
+      document.getElementById('editModalDate').innerText = `${tx.date} • ${tx.time || ''}`;
+
+      // Highlight selected category button in edit modal
+      document.querySelectorAll('.edit-cat-btn').forEach(btn => {
+        const cat = btn.getAttribute('data-cat');
+        if (cat === editSelectedCat) {
+          btn.className = 'edit-cat-btn py-2 px-2 rounded-xl text-xs font-bold border-2 border-[#111317] bg-[#111317] text-white flex items-center justify-center space-x-1';
+        } else {
+          btn.className = 'edit-cat-btn py-2 px-2 rounded-xl text-xs font-semibold border border-[#E3E6EB] bg-[#F8F9FA] text-[#454854] flex items-center justify-center space-x-1';
+        }
+      });
+
+      // Render accounts in edit modal
+      const accContainer = document.getElementById('editAccountContainer');
+      accContainer.innerHTML = '';
+      bankAccounts.forEach(acc => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        const isSelected = acc.name === editSelectedBank;
+        btn.className = isSelected 
+          ? 'py-1.5 px-3 rounded-xl text-xs font-bold border-2 border-[#111317] bg-[#111317] text-white'
+          : 'py-1.5 px-3 rounded-xl text-xs font-medium border border-[#E3E6EB] bg-[#F8F9FA] text-[#454854]';
+        btn.innerText = `${acc.icon} ${acc.name}`;
+        btn.onclick = () => {
+          editSelectedBank = acc.name;
+          openEditModal(id);
+        };
+        accContainer.appendChild(btn);
+      });
+
+      document.getElementById('editTransactionModal').classList.remove('hidden');
+    }
+
+    function closeEditModal() {
+      document.getElementById('editTransactionModal').classList.add('hidden');
+      currentEditingId = null;
+    }
+
+    document.getElementById('btnCloseEditModal').addEventListener('click', closeEditModal);
+
+    // Edit Category selection clicks
+    document.querySelectorAll('.edit-cat-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        editSelectedCat = btn.getAttribute('data-cat');
+        document.querySelectorAll('.edit-cat-btn').forEach(b => {
+          b.className = 'edit-cat-btn py-2 px-2 rounded-xl text-xs font-semibold border border-[#E3E6EB] bg-[#F8F9FA] text-[#454854] flex items-center justify-center space-x-1';
+        });
+        btn.className = 'edit-cat-btn py-2 px-2 rounded-xl text-xs font-bold border-2 border-[#111317] bg-[#111317] text-white flex items-center justify-center space-x-1';
+      });
+    });
+
+    // Save edited transaction
+    document.getElementById('btnSaveTx').addEventListener('click', () => {
+      if (!currentEditingId) return;
+      const amountVal = parseFloat(document.getElementById('editTxAmount').value);
+      const actionVal = document.getElementById('editTxAction').value.trim();
+
+      if (isNaN(amountVal) || amountVal <= 0) {
+        alert('Please enter a valid amount');
+        return;
+      }
+
+      const txIndex = transactions.findIndex(t => t.id === currentEditingId);
+      if (txIndex !== -1) {
+        transactions[txIndex].amount = amountVal;
+        transactions[txIndex].action = actionVal || `Paid to ${editSelectedCat}`;
+        transactions[txIndex].category = editSelectedCat;
+        transactions[txIndex].bank = editSelectedBank;
+
+        localStorage.setItem('ep_transactions_v2', JSON.stringify(transactions));
+        renderAll();
+        closeEditModal();
+      }
+    });
+
+    // Delete transaction
+    document.getElementById('btnDeleteTx').addEventListener('click', () => {
+      if (!currentEditingId) return;
+      if (confirm('Delete this transaction?')) {
+        transactions = transactions.filter(t => t.id !== currentEditingId);
+        localStorage.setItem('ep_transactions_v2', JSON.stringify(transactions));
+        renderAll();
+        closeEditModal();
+      }
+    });
+
+    // ==========================================
+    // IPHONE BACK-TAP (DOUBLE TAP) & SHAKE ENGINE
+    // ==========================================
     let isIslandActive = false;
     let pageLoadTime = Date.now();
     let lastIslandDismissTime = 0;
@@ -1406,7 +1596,27 @@
       setTimeout(() => { isIslandActive = false; }, 600);
     };
 
+    // Auto-request iOS 13+ motion permission on first user touch/tap
+    let motionPermissionGranted = false;
+    async function requestMotionPermission() {
+      if (motionPermissionGranted) return;
+      if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+        try {
+          const response = await DeviceMotionEvent.requestPermission();
+          if (response === 'granted') {
+            motionPermissionGranted = true;
+          }
+        } catch (e) {
+          console.log('Permission note:', e);
+        }
+      }
+    }
+    window.addEventListener('touchstart', requestMotionPermission, { passive: true });
+    window.addEventListener('click', requestMotionPermission, { passive: true });
+
     if (window.DeviceMotionEvent) {
+      let lastZ = null;
+      let lastTapTime = 0;
       let swingHistory = [];
       let lastSwingTime = 0;
       let lastAxisSign = 0;
@@ -1414,22 +1624,47 @@
       window.addEventListener('devicemotion', (e) => {
         const now = Date.now();
 
-        // 1. Warm-up & State Guards:
-        // Ignore for 2 seconds after page load
-        // Ignore if shake is disabled in settings
-        // Ignore if island is open or was closed less than 2.5s ago
+        // Warm-up & state guards
         if (!shakeEnabled) return;
-        if (now - pageLoadTime < 2000) return;
-        if (isIslandActive || (now - lastIslandDismissTime < 2500)) return;
+        if (now - pageLoadTime < 1500) return;
+        if (isIslandActive || (now - lastIslandDismissTime < 2000)) return;
 
-        // 2. GYROSCOPE VERIFICATION (Requires rapid angular wrist rotation)
+        // 1. IPHONE BACK-TAP (DOUBLE TAP ON BACK OF PHONE)
+        // A finger tap on the back produces an instantaneous high-frequency spike on the Z-axis
+        let zVal = null;
+        if (e.acceleration && e.acceleration.z !== null && typeof e.acceleration.z === 'number') {
+          zVal = e.acceleration.z;
+        } else if (e.accelerationIncludingGravity && e.accelerationIncludingGravity.z !== null) {
+          zVal = e.accelerationIncludingGravity.z;
+        }
+
+        if (zVal !== null) {
+          if (lastZ !== null) {
+            const deltaZ = Math.abs(zVal - lastZ);
+            // Double-tap impulse window: deltaZ between 6.5 and 32 m/s²
+            if (deltaZ > 6.5 && deltaZ < 32) {
+              const timeSinceLastTap = now - lastTapTime;
+              if (timeSinceLastTap > 110 && timeSinceLastTap < 480) {
+                lastTapTime = 0;
+                lastIslandDismissTime = now;
+                if (navigator.vibrate) navigator.vibrate([40, 60, 40]);
+                openDynamicIsland();
+                return;
+              } else if (timeSinceLastTap > 500) {
+                lastTapTime = now;
+              }
+            }
+          }
+          lastZ = zVal;
+        }
+
+        // 2. DELIBERATE SHAKE CHECK (Rapid wrist rotation or force)
         const rot = e.rotationRate;
         let rotSpeed = 0;
         if (rot) {
           rotSpeed = (Math.abs(rot.alpha || 0) + Math.abs(rot.beta || 0) + Math.abs(rot.gamma || 0));
         }
 
-        // 3. ACCELEROMETER LINEAR MAGNITUDE
         let accelMag = 0;
         let primaryAxisVal = 0;
 
@@ -1446,31 +1681,25 @@
           primaryAxisVal = Math.abs(gx) > Math.abs(gy) ? gx : gy;
         }
 
-        // 4. DUAL THRESHOLD: Deliberate rapid motion
-        // - Accelerometer force must exceed 24 m/s² (~2.5g)
-        // - Gyroscope rotational velocity must exceed 280 deg/s (or if gyro not reported, higher accel threshold > 32 m/s²)
         const hasGyro = rotSpeed > 0;
-        const satisfiesAccel = hasGyro ? (accelMag > 22) : (accelMag > 30);
-        const satisfiesGyro = hasGyro ? (rotSpeed > 260) : true;
+        const satisfiesAccel = hasGyro ? (accelMag > 20) : (accelMag > 28);
+        const satisfiesGyro = hasGyro ? (rotSpeed > 220) : true;
 
         if (satisfiesAccel && satisfiesGyro) {
           const currentSign = primaryAxisVal > 0 ? 1 : -1;
 
-          // Enforce at least 110ms between swings to prevent a single movement counting multiple times
-          if (now - lastSwingTime > 110) {
-            // Require direction reversal (swing back and forth)
+          if (now - lastSwingTime > 100) {
             if (currentSign !== lastAxisSign) {
               swingHistory.push(now);
               lastAxisSign = currentSign;
               lastSwingTime = now;
 
-              // Keep swings within 650ms window
               swingHistory = swingHistory.filter(t => now - t < 650);
 
-              // Require 3 deliberate back-and-forth directional swings
-              if (swingHistory.length >= 3) {
+              if (swingHistory.length >= 2) {
                 swingHistory = [];
                 lastIslandDismissTime = now;
+                if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
                 openDynamicIsland();
               }
             }
@@ -1478,6 +1707,7 @@
         }
       });
     }
+
     // Initial render
     renderAccountSelectors();
     renderAll();
