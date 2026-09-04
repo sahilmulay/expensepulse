@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -127,17 +128,42 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// Clean Minimalist Monochrome Theme
+// Complete Material 3 Color Scheme & Theme for Android
 @Composable
 fun ExpensePulseTheme(content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = lightColorScheme(
             primary = Color(0xFF111317),
             onPrimary = Color.White,
-            primaryContainer = Color(0xFFEAECEF),
-            background = Color(0xFFF5F6F8),
+            primaryContainer = Color(0xFFE4E7EB),
+            onPrimaryContainer = Color(0xFF111317),
+            secondary = Color(0xFF4B515D),
+            onSecondary = Color.White,
+            secondaryContainer = Color(0xFFEAECEF),
+            onSecondaryContainer = Color(0xFF111317),
+            tertiary = Color(0xFF2563EB),
+            onTertiary = Color.White,
+            tertiaryContainer = Color(0xFFDBEAFE),
+            onTertiaryContainer = Color(0xFF1E40AF),
+            error = Color(0xFFDC2626),
+            onError = Color.White,
+            errorContainer = Color(0xFFFEE2E2),
+            onErrorContainer = Color(0xFF991B1B),
+            background = Color(0xFFF7F8FA),
+            onBackground = Color(0xFF111317),
             surface = Color.White,
-            onSurface = Color(0xFF111317)
+            onSurface = Color(0xFF111317),
+            surfaceVariant = Color(0xFFF1F3F5),
+            onSurfaceVariant = Color(0xFF6B7280),
+            outline = Color(0xFFD1D5DB),
+            outlineVariant = Color(0xFFE5E7EB)
+        ),
+        shapes = Shapes(
+            extraSmall = RoundedCornerShape(4.dp),
+            small = RoundedCornerShape(8.dp),
+            medium = RoundedCornerShape(12.dp),
+            large = RoundedCornerShape(16.dp),
+            extraLarge = RoundedCornerShape(24.dp)
         ),
         content = content
     )
@@ -192,12 +218,12 @@ fun MainAppScreen(
                             text = "ExpensePulse",
                             fontWeight = FontWeight.ExtraBold,
                             fontSize = 18.sp,
-                            color = Color(0xFF111317)
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = "Personal Expense Manager",
                             fontSize = 11.sp,
-                            color = Color(0xFF8C919E)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 },
@@ -206,18 +232,21 @@ fun MainAppScreen(
                         Icon(
                             imageVector = Icons.Default.AddCircleOutline,
                             contentDescription = "Test Shake Overlay",
-                            tint = Color(0xFF111317)
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
+                )
             )
         },
         bottomBar = {
-            // Mobile-Friendly 3-Tab Bottom Navigation Bar (No text wrapping)
+            // Material 3 Navigation Bar with tonal elevation & active indicator
             NavigationBar(
-                containerColor = Color.White,
-                tonalElevation = 6.dp
+                containerColor = MaterialTheme.colorScheme.surface,
+                tonalElevation = 3.dp
             ) {
                 NavigationBarItem(
                     selected = selectedTab == 0,
@@ -225,11 +254,11 @@ fun MainAppScreen(
                     icon = { Icon(Icons.Default.Dashboard, contentDescription = "Dashboard") },
                     label = { Text("Dashboard", fontWeight = if (selectedTab == 0) FontWeight.Bold else FontWeight.Medium) },
                     colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color(0xFF111317),
-                        selectedTextColor = Color(0xFF111317),
-                        indicatorColor = Color(0xFFEAECEF),
-                        unselectedIconColor = Color(0xFF8C919E),
-                        unselectedTextColor = Color(0xFF8C919E)
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 )
                 NavigationBarItem(
@@ -238,11 +267,11 @@ fun MainAppScreen(
                     icon = { Icon(Icons.Default.ReceiptLong, contentDescription = "Transactions") },
                     label = { Text("Transactions", fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Medium) },
                     colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color(0xFF111317),
-                        selectedTextColor = Color(0xFF111317),
-                        indicatorColor = Color(0xFFEAECEF),
-                        unselectedIconColor = Color(0xFF8C919E),
-                        unselectedTextColor = Color(0xFF8C919E)
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 )
                 NavigationBarItem(
@@ -251,27 +280,29 @@ fun MainAppScreen(
                     icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
                     label = { Text("Settings", fontWeight = if (selectedTab == 2) FontWeight.Bold else FontWeight.Medium) },
                     colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color(0xFF111317),
-                        selectedTextColor = Color(0xFF111317),
-                        indicatorColor = Color(0xFFEAECEF),
-                        unselectedIconColor = Color(0xFF8C919E),
-                        unselectedTextColor = Color(0xFF8C919E)
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 )
             }
         },
         floatingActionButton = {
+            // Material 3 FAB with Squircle Shape
             FloatingActionButton(
                 onClick = onTriggerOverlayPreview,
-                containerColor = Color(0xFF111317),
-                contentColor = Color.White,
-                shape = CircleShape
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = RoundedCornerShape(16.dp),
+                elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 4.dp)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Quick Add")
             }
         }
     ) { paddingValues ->
-        Box(modifier = Modifier.padding(paddingValues).fillMaxSize().background(Color(0xFFF5F6F8))) {
+        Box(modifier = Modifier.padding(paddingValues).fillMaxSize().background(MaterialTheme.colorScheme.background)) {
             when (selectedTab) {
                 0 -> DashboardTab(
                     transactions = transactions,
@@ -352,11 +383,11 @@ fun DashboardTab(
     ) {
         item {
             Spacer(modifier = Modifier.height(4.dp))
-            // Minimalist Total Outflow Card (Obsidian Slate) - Removed Received/Inflow
+            // Material 3 Obsidian Total Outflow Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFF111317)),
-                shape = RoundedCornerShape(20.dp)
+                shape = RoundedCornerShape(24.dp)
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Row(
@@ -391,7 +422,7 @@ fun DashboardTab(
             }
         }
 
-        // Monthly Budget Tracker Card (Matches Web Companion 100%)
+        // Material 3 Monthly Budget Tracker Card
         item {
             val context = LocalContext.current
             val prefs = remember { context.getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE) }
@@ -399,11 +430,11 @@ fun DashboardTab(
             val remaining = budgetCap.value - totalExpense
             val pct = if (budgetCap.value > 0) (totalExpense / budgetCap.value).coerceIn(0.0, 1.0) else 0.0
 
-            Card(
+            OutlinedCard(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface),
                 shape = RoundedCornerShape(20.dp),
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE9EBEF))
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
             ) {
                 Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Row(
@@ -412,22 +443,22 @@ fun DashboardTab(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text("Monthly Budget", color = Color(0xFF8C919E), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text("Monthly Budget", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             Text(
                                 if (remaining >= 0) "₹ ${"%,.2f".format(remaining)} left" else "Exceeded by ₹ ${"%,.2f".format(-remaining)}",
-                                color = if (remaining >= 0) Color(0xFF111317) else Color(0xFFDC2626),
+                                color = if (remaining >= 0) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.ExtraBold
                             )
                         }
                         Surface(
-                            color = Color(0xFFF5F6F8),
-                            shape = RoundedCornerShape(10.dp),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE3E6EB))
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            shape = RoundedCornerShape(12.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                         ) {
                             Text(
                                 "Limit: ₹${"%,.0f".format(budgetCap.value)}",
-                                color = Color(0xFF454854),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
@@ -439,12 +470,13 @@ fun DashboardTab(
                         LinearProgressIndicator(
                             progress = pct.toFloat(),
                             modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
-                            color = if (remaining >= 0) Color(0xFF111317) else Color(0xFFDC2626),
-                            trackColor = Color(0xFFEAECEF)
+                            color = if (remaining >= 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                            strokeCap = StrokeCap.Round
                         )
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("${(pct * 100).toInt()}% spent", fontSize = 10.sp, color = Color(0xFF8C919E), fontWeight = FontWeight.Medium)
-                            Text("Spent ₹${"%,.0f".format(totalExpense)}", fontSize = 10.sp, color = Color(0xFF8C919E), fontWeight = FontWeight.Medium)
+                            Text("${(pct * 100).toInt()}% spent", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)
+                            Text("Spent ₹${"%,.0f".format(totalExpense)}", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)
                         }
                     }
                 }
@@ -453,7 +485,7 @@ fun DashboardTab(
 
         // Account Breakdown
         item {
-            Text("Accounts", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color(0xFF111317))
+            Text("Accounts", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
             Spacer(modifier = Modifier.height(8.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 AccountCard(
@@ -479,17 +511,18 @@ fun DashboardTab(
 
         // Category Breakdown
         item {
-            Text("Spending by Category", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color(0xFF111317))
+            Text("Spending by Category", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
             Spacer(modifier = Modifier.height(8.dp))
 
             if (categoryGroups.isEmpty()) {
-                Card(
+                OutlinedCard(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    shape = RoundedCornerShape(14.dp)
+                    colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    shape = RoundedCornerShape(16.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                 ) {
                     Box(modifier = Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
-                        Text("No expenses logged yet", color = Color(0xFF8C919E), fontSize = 13.sp)
+                        Text("No expenses logged yet", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
                     }
                 }
             } else {
@@ -509,21 +542,22 @@ fun DashboardTab(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Recent Transactions", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color(0xFF111317))
-                Text("Tap to edit", fontSize = 11.sp, color = Color(0xFF8C919E))
+                Text("Recent Transactions", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
+                Text("Tap to edit", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Spacer(modifier = Modifier.height(4.dp))
         }
 
         if (transactions.isEmpty()) {
             item {
-                Card(
+                OutlinedCard(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    shape = RoundedCornerShape(14.dp)
+                    colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    shape = RoundedCornerShape(16.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                 ) {
                     Box(modifier = Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
-                        Text("No transactions found", color = Color(0xFF8C919E), fontSize = 13.sp)
+                        Text("No transactions found", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
                     }
                 }
             }
@@ -541,17 +575,17 @@ fun DashboardTab(
 
 @Composable
 fun AccountCard(title: String, icon: String, spent: Double, modifier: Modifier = Modifier) {
-    Card(
+    OutlinedCard(
         modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(14.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE9EBEF))
+        colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(16.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
-            Text("$icon $title", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF111317))
+            Text("$icon $title", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
             Spacer(modifier = Modifier.height(4.dp))
-            Text("₹ ${"%,.0f".format(spent)}", fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF111317))
-            Text("spent", fontSize = 10.sp, color = Color(0xFF8C919E))
+            Text("₹ ${"%,.0f".format(spent)}", fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
+            Text("spent", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -561,17 +595,17 @@ fun CategoryRow(category: Category, amount: Double, percentage: Double) {
     val context = LocalContext.current
     val categoryItem = remember(category) { CategoryManager.getCategoryItem(context, category) }
 
-    Card(
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(12.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE9EBEF))
+    OutlinedCard(
+        colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(16.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            modifier = Modifier.fillMaxWidth().padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
-                modifier = Modifier.size(38.dp).clip(CircleShape).background(Color(0xFFF5F6F8)),
+                modifier = Modifier.size(40.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
                 Text(categoryItem.iconEmoji, fontSize = 18.sp)
@@ -579,15 +613,16 @@ fun CategoryRow(category: Category, amount: Double, percentage: Double) {
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(categoryItem.displayName, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = Color(0xFF111317))
-                    Text("₹ ${"%,.2f".format(amount)}", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color(0xFF111317))
+                    Text(categoryItem.displayName, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface)
+                    Text("₹ ${"%,.2f".format(amount)}", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface)
                 }
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(6.dp))
                 LinearProgressIndicator(
                     progress = percentage.toFloat().coerceIn(0f, 1f),
-                    modifier = Modifier.fillMaxWidth().height(5.dp).clip(RoundedCornerShape(3.dp)),
-                    color = Color(0xFF111317),
-                    trackColor = Color(0xFFEAECEF)
+                    modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
+                    color = MaterialTheme.colorScheme.primary,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    strokeCap = StrokeCap.Round
                 )
             }
         }
@@ -623,45 +658,49 @@ fun TransactionsTab(
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
         Spacer(modifier = Modifier.height(10.dp))
 
-        // Search Bar
+        // Search Bar with Material 3 styling
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
-            placeholder = { Text("Search merchant or amount...", fontSize = 13.sp) },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color(0xFF8C919E)) },
+            placeholder = { Text("Search merchant or amount...", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(16.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
-                focusedBorderColor = Color(0xFF111317),
-                unfocusedBorderColor = Color(0xFFE3E6EB)
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
             )
         )
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // Account Filter Pills (Smooth row)
+        // Account Filter Chips (Material 3)
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             FilterChip(
                 selected = selectedFilter == "ALL",
                 onClick = { selectedFilter = "ALL" },
-                label = { Text("All") }
+                label = { Text("All", fontWeight = if (selectedFilter == "ALL") FontWeight.Bold else FontWeight.Normal) },
+                shape = RoundedCornerShape(12.dp)
             )
             FilterChip(
                 selected = selectedFilter == "SBI",
                 onClick = { selectedFilter = "SBI" },
-                label = { Text("SBI 7067") }
+                label = { Text("SBI 7067", fontWeight = if (selectedFilter == "SBI") FontWeight.Bold else FontWeight.Normal) },
+                shape = RoundedCornerShape(12.dp)
             )
             FilterChip(
                 selected = selectedFilter == "IPPB",
                 onClick = { selectedFilter = "IPPB" },
-                label = { Text("IPPB 2938") }
+                label = { Text("IPPB 2938", fontWeight = if (selectedFilter == "IPPB") FontWeight.Bold else FontWeight.Normal) },
+                shape = RoundedCornerShape(12.dp)
             )
             FilterChip(
                 selected = selectedFilter == "CASH",
                 onClick = { selectedFilter = "CASH" },
-                label = { Text("Cash") }
+                label = { Text("Cash", fontWeight = if (selectedFilter == "CASH") FontWeight.Bold else FontWeight.Normal) },
+                shape = RoundedCornerShape(12.dp)
             )
         }
 
@@ -674,7 +713,7 @@ fun TransactionsTab(
             if (filteredTransactions.isEmpty()) {
                 item {
                     Box(modifier = Modifier.fillMaxWidth().padding(40.dp), contentAlignment = Alignment.Center) {
-                        Text("No matching transactions", color = Color(0xFF8C919E), fontSize = 13.sp)
+                        Text("No matching transactions", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
                     }
                 }
             } else {
@@ -700,8 +739,8 @@ fun TransactionListItem(
     val isSettlement = transaction.type == TransactionType.SETTLEMENT
 
     val amountColor = when {
-        isTransfer -> Color(0xFF2563EB)
-        isExpense -> Color(0xFF111317)
+        isTransfer -> MaterialTheme.colorScheme.tertiary
+        isExpense -> MaterialTheme.colorScheme.onSurface
         else -> Color(0xFF059669)
     }
 
@@ -728,20 +767,20 @@ fun TransactionListItem(
     val categoryItem = remember(transaction.category) { CategoryManager.getCategoryItem(context, transaction.category) }
     val displayIcon = if (isCash && transaction.category == Category.OTHER) "💵" else categoryItem.iconEmoji
 
-    Card(
+    OutlinedCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(14.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE9EBEF))
+        colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(16.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
-                modifier = Modifier.size(40.dp).clip(CircleShape).background(Color(0xFFF5F6F8)),
+                modifier = Modifier.size(40.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
                 Text(displayIcon, fontSize = 18.sp)
@@ -752,17 +791,17 @@ fun TransactionListItem(
                     text = transaction.merchantOrPerson,
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.sp,
-                    color = Color(0xFF111317)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text(dateText, fontSize = 11.sp, color = Color(0xFF8C919E))
-                    Text("•", fontSize = 11.sp, color = Color(0xFF8C919E))
+                    Text(dateText, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("•", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(
                         text = bankDisplayName,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color(0xFF454854)
+                        color = MaterialTheme.colorScheme.secondary
                     )
                 }
             }
@@ -774,7 +813,7 @@ fun TransactionListItem(
                     color = amountColor
                 )
                 if (isTransfer) {
-                    Text("Transfer", fontSize = 10.sp, color = Color(0xFF2563EB), fontWeight = FontWeight.Bold)
+                    Text("Transfer", fontSize = 10.sp, color = MaterialTheme.colorScheme.tertiary, fontWeight = FontWeight.Bold)
                 } else if (isSettlement) {
                     Text("Settlement", fontSize = 10.sp, color = Color(0xFF059669), fontWeight = FontWeight.Bold)
                 }
@@ -783,7 +822,7 @@ fun TransactionListItem(
     }
 }
 
-// 1-Tap Edit & Delete Expense Dialog for Android Native
+// 1-Tap Edit & Delete Expense Dialog for Android Native with Material 3 styling
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditTransactionDialog(
@@ -816,9 +855,9 @@ fun EditTransactionDialog(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Edit Expense", fontWeight = FontWeight.Bold, fontSize = 17.sp, color = Color(0xFF111317))
+                Text("Edit Expense", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurface)
                 IconButton(onClick = onDismiss, modifier = Modifier.size(28.dp)) {
-                    Icon(Icons.Default.Close, contentDescription = "Close", tint = Color(0xFF8C919E), modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
                 }
             }
         },
@@ -829,42 +868,42 @@ fun EditTransactionDialog(
             ) {
                 // Amount Input
                 Column {
-                    Text("Amount (₹)", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF8C919E))
+                    Text("Amount (₹)", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(modifier = Modifier.height(4.dp))
                     OutlinedTextField(
                         value = amountText,
                         onValueChange = { amountText = it },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
-                        shape = RoundedCornerShape(10.dp),
+                        shape = RoundedCornerShape(14.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF111317),
-                            unfocusedBorderColor = Color(0xFFE3E6EB)
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
                         )
                     )
                 }
 
                 // Note / Merchant Input
                 Column {
-                    Text("Note / Merchant", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF8C919E))
+                    Text("Note / Merchant", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(modifier = Modifier.height(4.dp))
                     OutlinedTextField(
                         value = merchantText,
                         onValueChange = { merchantText = it },
-                        placeholder = { Text("e.g. Chai, Groceries, Zomato", fontSize = 12.sp) },
+                        placeholder = { Text("e.g. Chai, Groceries, Zomato", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
-                        shape = RoundedCornerShape(10.dp),
+                        shape = RoundedCornerShape(14.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF111317),
-                            unfocusedBorderColor = Color(0xFFE3E6EB)
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
                         )
                     )
                 }
 
                 // Category Selection
                 Column {
-                    Text("Category", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF8C919E))
+                    Text("Category", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
@@ -875,10 +914,7 @@ fun EditTransactionDialog(
                                 selected = selectedCategory == catItem.enumCategory,
                                 onClick = { selectedCategory = catItem.enumCategory },
                                 label = { Text("${catItem.iconEmoji} ${catItem.displayName}", fontSize = 11.sp) },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = Color(0xFF111317),
-                                    selectedLabelColor = Color.White
-                                )
+                                shape = RoundedCornerShape(12.dp)
                             )
                         }
                     }
@@ -886,7 +922,7 @@ fun EditTransactionDialog(
 
                 // Bank Account Selection
                 Column {
-                    Text("Account", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF8C919E))
+                    Text("Account", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
@@ -898,10 +934,7 @@ fun EditTransactionDialog(
                                 selected = selectedBank == bank,
                                 onClick = { selectedBank = bank },
                                 label = { Text(label, fontSize = 11.sp) },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = Color(0xFF111317),
-                                    selectedLabelColor = Color.White
-                                )
+                                shape = RoundedCornerShape(12.dp)
                             )
                         }
                     }
@@ -924,28 +957,36 @@ fun EditTransactionDialog(
                     onSave(updated)
                     onDismiss()
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF111317)),
-                shape = RoundedCornerShape(10.dp)
+                shape = RoundedCornerShape(100.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
             ) {
                 Text("Save Changes", fontWeight = FontWeight.Bold, fontSize = 12.sp)
             }
         },
         dismissButton = {
-            TextButton(
+            FilledTonalButton(
                 onClick = {
                     onDelete(transaction)
                     onDismiss()
-                }
+                },
+                shape = RoundedCornerShape(100.dp),
+                colors = ButtonDefaults.filledTonalButtonColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                    contentColor = MaterialTheme.colorScheme.onErrorContainer
+                )
             ) {
-                Text("Delete", color = Color(0xFFDC2626), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                Text("Delete", fontWeight = FontWeight.Bold, fontSize = 12.sp)
             }
         },
-        containerColor = Color.White,
-        shape = RoundedCornerShape(18.dp)
+        containerColor = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(28.dp)
     )
 }
 
-// Interactive Category Customization Dialog
+// Interactive Category Customization Dialog with Material 3 styling
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditCategoryDialog(
@@ -967,9 +1008,9 @@ fun EditCategoryDialog(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Customize Category", fontWeight = FontWeight.Bold, fontSize = 17.sp, color = Color(0xFF111317))
+                Text("Customize Category", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurface)
                 IconButton(onClick = onDismiss, modifier = Modifier.size(28.dp)) {
-                    Icon(Icons.Default.Close, contentDescription = "Close", tint = Color(0xFF8C919E), modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
                 }
             }
         },
@@ -980,7 +1021,7 @@ fun EditCategoryDialog(
             ) {
                 // Category Emoji & Quick Picker
                 Column {
-                    Text("Category Icon / Emoji", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF8C919E))
+                    Text("Category Icon / Emoji", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(modifier = Modifier.height(6.dp))
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -991,10 +1032,10 @@ fun EditCategoryDialog(
                             onValueChange = { if (it.length <= 4) emojiText = it },
                             modifier = Modifier.width(68.dp),
                             singleLine = true,
-                            shape = RoundedCornerShape(10.dp),
+                            shape = RoundedCornerShape(14.dp),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color(0xFF111317),
-                                unfocusedBorderColor = Color(0xFFE3E6EB)
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
                             )
                         )
                         Row(
@@ -1004,10 +1045,14 @@ fun EditCategoryDialog(
                             quickEmojis.forEach { emoji ->
                                 Surface(
                                     modifier = Modifier
-                                        .clip(RoundedCornerShape(8.dp))
+                                        .clip(RoundedCornerShape(10.dp))
                                         .clickable { emojiText = emoji }
-                                        .border(1.dp, if (emojiText == emoji) Color(0xFF111317) else Color(0xFFE3E6EB), RoundedCornerShape(8.dp)),
-                                    color = if (emojiText == emoji) Color(0xFFEAECEF) else Color(0xFFF5F6F8)
+                                        .border(
+                                            1.dp,
+                                            if (emojiText == emoji) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+                                            RoundedCornerShape(10.dp)
+                                        ),
+                                    color = if (emojiText == emoji) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
                                 ) {
                                     Text(emoji, fontSize = 16.sp, modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp))
                                 }
@@ -1018,17 +1063,17 @@ fun EditCategoryDialog(
 
                 // Category Name
                 Column {
-                    Text("Category Name", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF8C919E))
+                    Text("Category Name", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(modifier = Modifier.height(4.dp))
                     OutlinedTextField(
                         value = nameText,
                         onValueChange = { nameText = it },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
-                        shape = RoundedCornerShape(10.dp),
+                        shape = RoundedCornerShape(14.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF111317),
-                            unfocusedBorderColor = Color(0xFFE3E6EB)
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
                         )
                     )
                 }
@@ -1040,18 +1085,12 @@ fun EditCategoryDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column {
-                        Text("Show in Quick Select", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color(0xFF111317))
-                        Text("Enable for spending tags & quick entry", fontSize = 11.sp, color = Color(0xFF8C919E))
+                        Text("Show in Quick Select", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface)
+                        Text("Enable for spending tags & quick entry", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Switch(
                         checked = isEnabled,
-                        onCheckedChange = { isEnabled = it },
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = Color(0xFF111317),
-                            uncheckedThumbColor = Color.White,
-                            uncheckedTrackColor = Color(0xFFD6D9E0)
-                        )
+                        onCheckedChange = { isEnabled = it }
                     )
                 }
             }
@@ -1064,19 +1103,25 @@ fun EditCategoryDialog(
                     onSave(categoryItem.copy(displayName = finalName, iconEmoji = finalEmoji, isEnabled = isEnabled))
                     onDismiss()
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF111317)),
-                shape = RoundedCornerShape(10.dp)
+                shape = RoundedCornerShape(100.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
             ) {
                 Text("Save Category", fontWeight = FontWeight.Bold, fontSize = 12.sp)
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel", color = Color(0xFF111317), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+            TextButton(
+                onClick = onDismiss,
+                shape = RoundedCornerShape(100.dp)
+            ) {
+                Text("Cancel", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 12.sp)
             }
         },
-        containerColor = Color.White,
-        shape = RoundedCornerShape(18.dp)
+        containerColor = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(28.dp)
     )
 }
 
@@ -1120,16 +1165,16 @@ fun SettingsTab(
     ) {
         item {
             Spacer(modifier = Modifier.height(4.dp))
-            Text("⚙️ Settings & Gestures", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color(0xFF111317))
+            Text("⚙️ Settings & Gestures", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurface)
         }
 
-        // Shake Phone to Log Card with Persistent Toggle
+        // Shake Phone to Log Card with Persistent Toggle (Material 3 OutlinedCard)
         item {
-            Card(
+            OutlinedCard(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                shape = RoundedCornerShape(16.dp),
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE9EBEF))
+                colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface),
+                shape = RoundedCornerShape(20.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
             ) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     Row(
@@ -1138,11 +1183,11 @@ fun SettingsTab(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("Shake Phone to Log", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color(0xFF111317))
+                            Text("Shake Phone to Log", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
                             Text(
                                 "Runs in background. Shake twice right after making a UPI payment to open the quick-add window.",
                                 fontSize = 12.sp,
-                                color = Color(0xFF8C919E)
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                         Switch(
@@ -1151,49 +1196,41 @@ fun SettingsTab(
                                 shakeEnabled = isChecked
                                 prefs.edit().putBoolean(MainActivity.KEY_SHAKE_ENABLED, isChecked).apply()
                                 onToggleShake(isChecked)
-                            },
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = Color.White,
-                                checkedTrackColor = Color(0xFF111317),
-                                uncheckedThumbColor = Color.White,
-                                uncheckedTrackColor = Color(0xFFD6D9E0)
-                            )
+                            }
                         )
                     }
 
-                    Divider(color = Color(0xFFF0F2F5))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
                     // Overlay Permission
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text("Floating Overlay Permission", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color(0xFF111317))
+                        Text("Floating Overlay Permission", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
                         Text(
                             "Required to show the quick-log window on top of GPay or PhonePe without exiting.",
                             fontSize = 12.sp,
-                            color = Color(0xFF8C919E)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         OutlinedButton(
                             onClick = onRequestOverlay,
-                            shape = RoundedCornerShape(10.dp),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF111317))
+                            shape = RoundedCornerShape(100.dp)
                         ) {
-                            Text("Grant 'Display over other apps'", color = Color(0xFF111317), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            Text("Grant 'Display over other apps'", fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         }
                     }
 
-                    Divider(color = Color(0xFFF0F2F5))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
                     // Test Overlay
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text("Test Floating Overlay Now", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color(0xFF111317))
+                        Text("Test Floating Overlay Now", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
                         Text(
                             "Simulate shaking or opening the floating window.",
                             fontSize = 12.sp,
-                            color = Color(0xFF8C919E)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Button(
+                        FilledTonalButton(
                             onClick = onTestOverlay,
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF111317)),
-                            shape = RoundedCornerShape(10.dp)
+                            shape = RoundedCornerShape(100.dp)
                         ) {
                             Text("Launch Floating Quick-Add", fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         }
@@ -1202,13 +1239,13 @@ fun SettingsTab(
             }
         }
 
-        // Interactive Category Customization Card
+        // Interactive Category Customization Card (Material 3 OutlinedCard)
         item {
-            Card(
+            OutlinedCard(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                shape = RoundedCornerShape(16.dp),
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE9EBEF))
+                colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface),
+                shape = RoundedCornerShape(20.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
             ) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Row(
@@ -1217,8 +1254,8 @@ fun SettingsTab(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text("🏷️ Category Customization", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color(0xFF111317))
-                            Text("Tap any category to rename, change emoji, or enable/disable", fontSize = 11.sp, color = Color(0xFF8C919E))
+                            Text("🏷️ Category Customization", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
+                            Text("Tap any category to rename, change emoji, or enable/disable", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
 
@@ -1228,12 +1265,12 @@ fun SettingsTab(
                             Surface(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clip(RoundedCornerShape(10.dp))
+                                    .clip(RoundedCornerShape(12.dp))
                                     .clickable { editingCategoryItem = cat },
-                                color = if (cat.isEnabled) Color(0xFFF5F6F8) else Color(0xFFFAFAFA),
+                                color = if (cat.isEnabled) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface,
                                 border = androidx.compose.foundation.BorderStroke(
                                     1.dp,
-                                    if (cat.isEnabled) Color(0xFFE3E6EB) else Color(0xFFF0F0F0)
+                                    MaterialTheme.colorScheme.outlineVariant
                                 )
                             ) {
                                 Row(
@@ -1250,16 +1287,16 @@ fun SettingsTab(
                                             cat.displayName,
                                             fontSize = 13.sp,
                                             fontWeight = FontWeight.SemiBold,
-                                            color = if (cat.isEnabled) Color(0xFF111317) else Color(0xFF8C919E)
+                                            color = if (cat.isEnabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                         if (!cat.isEnabled) {
-                                            Text("(Disabled)", fontSize = 10.sp, color = Color(0xFF8C919E))
+                                            Text("(Disabled)", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                         }
                                     }
                                     Icon(
                                         Icons.Default.Edit,
                                         contentDescription = "Edit",
-                                        tint = Color(0xFF8C919E),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                         modifier = Modifier.size(16.dp)
                                     )
                                 }
@@ -1276,40 +1313,41 @@ fun SettingsTab(
                                 CategoryManager.resetDefaults(context)
                                 onCategoriesUpdated()
                                 Toast.makeText(context, "Reset to default categories", Toast.LENGTH_SHORT).show()
-                            }
+                            },
+                            shape = RoundedCornerShape(100.dp)
                         ) {
-                            Text("Reset Default Categories", color = Color(0xFF8C919E), fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                            Text("Reset Default Categories", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }
             }
         }
 
-        // Transferred Import Section: Inside Settings
+        // Transferred Import Section: Inside Settings (Material 3 OutlinedCard)
         item {
-            Card(
+            OutlinedCard(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                shape = RoundedCornerShape(16.dp),
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE9EBEF))
+                colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface),
+                shape = RoundedCornerShape(20.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
             ) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("📄 Import Statement (PDF / Text)", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color(0xFF111317))
+                    Text("📄 Import Statement (PDF / Text)", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
                     Text(
                         "Paste your Google Pay statement text below. It extracts transactions, tags categories, and excludes self-transfers automatically.",
                         fontSize = 12.sp,
-                        color = Color(0xFF8C919E)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
                     OutlinedTextField(
                         value = statementInput,
                         onValueChange = { statementInput = it },
-                        placeholder = { Text("Paste statement text here (e.g. 01 Aug, 2026 04:15 PM Paid to ... ₹20)", fontSize = 12.sp) },
+                        placeholder = { Text("Paste statement text here (e.g. 01 Aug, 2026 04:15 PM Paid to ... ₹20)", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) },
                         modifier = Modifier.fillMaxWidth().height(160.dp),
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(16.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF111317),
-                            unfocusedBorderColor = Color(0xFFE3E6EB)
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
                         )
                     )
 
@@ -1322,8 +1360,11 @@ fun SettingsTab(
                             }
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF111317)),
-                        shape = RoundedCornerShape(10.dp)
+                        shape = RoundedCornerShape(100.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        )
                     ) {
                         Icon(Icons.Default.Upload, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(8.dp))
@@ -1337,19 +1378,19 @@ fun SettingsTab(
             }
         }
 
-        // Clear All Data (Start Fresh) Section
+        // Clear All Data (Start Fresh) Section (Material 3 OutlinedCard)
         item {
             var showClearDialog by remember { mutableStateOf(false) }
 
             if (showClearDialog) {
                 AlertDialog(
                     onDismissRequest = { showClearDialog = false },
-                    title = { Text("Clear All Data?", fontWeight = FontWeight.Bold, color = Color(0xFF111317)) },
+                    title = { Text("Clear All Data?", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
                     text = {
                         Text(
                             "This will permanently delete all recorded transactions and reset your ledger to fresh zero. This action cannot be undone.",
                             fontSize = 13.sp,
-                            color = Color(0xFF454854)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     },
                     confirmButton = {
@@ -1358,43 +1399,53 @@ fun SettingsTab(
                                 showClearDialog = false
                                 onClearAllData()
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDC2626))
+                            shape = RoundedCornerShape(100.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error,
+                                contentColor = MaterialTheme.colorScheme.onError
+                            )
                         ) {
-                            Text("Yes, Clear All", color = Color.White, fontWeight = FontWeight.Bold)
+                            Text("Yes, Clear All", fontWeight = FontWeight.Bold)
                         }
                     },
                     dismissButton = {
-                        TextButton(onClick = { showClearDialog = false }) {
-                            Text("Cancel", color = Color(0xFF111317))
+                        TextButton(
+                            onClick = { showClearDialog = false },
+                            shape = RoundedCornerShape(100.dp)
+                        ) {
+                            Text("Cancel", color = MaterialTheme.colorScheme.onSurface)
                         }
                     },
-                    containerColor = Color.White,
-                    shape = RoundedCornerShape(16.dp)
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    shape = RoundedCornerShape(28.dp)
                 )
             }
 
-            Card(
+            OutlinedCard(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                shape = RoundedCornerShape(16.dp),
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE9EBEF))
+                colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface),
+                shape = RoundedCornerShape(20.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
             ) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("🗑️ Reset & Clear Data", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color(0xFF111317))
+                    Text("🗑️ Reset & Clear Data", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
                     Text(
                         "Wipe all testing transactions and start completely fresh from ₹0.00.",
                         fontSize = 12.sp,
-                        color = Color(0xFF8C919E)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     OutlinedButton(
                         onClick = { showClearDialog = true },
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(10.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFDC2626))
+                        shape = RoundedCornerShape(100.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error
+                        ),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.error)
                     ) {
-                        Icon(Icons.Default.DeleteOutline, contentDescription = null, tint = Color(0xFFDC2626), modifier = Modifier.size(16.dp))
+                        Icon(Icons.Default.DeleteOutline, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Clear All Transactions (Fresh Start)", color = Color(0xFFDC2626), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text("Clear All Transactions (Fresh Start)", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
                 }
             }
