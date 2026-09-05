@@ -1,4 +1,4 @@
-const CACHE_NAME = 'expensepulse-v2';
+const CACHE_NAME = 'expensepulse-v3';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
