@@ -23,7 +23,42 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    // Instant Quick-Log Mode Check (executed before DOM even renders!)
+    const isQuickMode = window.location.search.includes('action=quick-log') || window.location.hash.includes('log');
+    if (isQuickMode) {
+      document.documentElement.classList.add('quick-mode');
+    }
+  </script>
   <style>
+    /* Standalone Instant Quick-Log Mode (0ms paint, hides heavy dashboard) */
+    html.quick-mode, html.quick-mode body {
+      background: #090A0E !important;
+      overflow: hidden !important;
+    }
+    html.quick-mode #appHeader,
+    html.quick-mode main,
+    html.quick-mode nav {
+      display: none !important;
+    }
+    html.quick-mode #dynamicIsland {
+      position: fixed !important;
+      top: max(16px, env(safe-area-inset-top, 16px)) !important;
+      left: 12px !important;
+      right: 12px !important;
+      max-width: 440px !important;
+      margin: 0 auto !important;
+      display: block !important;
+      opacity: 1 !important;
+      transform: none !important;
+      animation: none !important;
+      pointer-events: auto !important;
+    }
+    html.quick-mode #islandForm {
+      display: block !important;
+      opacity: 1 !important;
+    }
+
     body {
       font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       -webkit-tap-highlight-color: transparent;
@@ -230,7 +265,7 @@
     </div>
 
     <!-- Responsive App Header -->
-    <div class="px-4 sm:px-5 pt-[max(14px,env(safe-area-inset-top,14px))] pb-3 border-b border-[#F0F2F5] bg-white sticky top-0 z-30">
+    <div id="appHeader" class="px-4 sm:px-5 pt-[max(14px,env(safe-area-inset-top,14px))] pb-3 border-b border-[#F0F2F5] bg-white sticky top-0 z-30">
       <div class="flex items-center justify-between gap-2">
         <div class="min-w-0">
           <h1 class="text-lg font-extrabold text-[#111317] tracking-tight truncate">ExpensePulse</h1>
@@ -1435,6 +1470,9 @@
         clearDynamicIslandForm();
         isIslandActive = false;
         lastIslandDismissTime = Date.now();
+        if (isQuickMode) {
+          window.location.href = './index.html';
+        }
       }, 350);
 
       if (!fromPop) popModalStateIfNeeded('dynamicIsland');
@@ -1466,6 +1504,9 @@
             clearDynamicIslandForm();
             isIslandActive = false;
             lastIslandDismissTime = Date.now();
+            if (isQuickMode) {
+              window.location.href = './index.html';
+            }
           }, 320);
         }, 900);
       }, 100);
