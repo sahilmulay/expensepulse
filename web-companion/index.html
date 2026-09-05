@@ -793,24 +793,34 @@
       if (!fromPop) popModalStateIfNeeded('installModal');
     }
 
-    document.getElementById('btnHeaderInstall').addEventListener('click', () => openInstallModal());
-    document.getElementById('btnSettingsInstall').addEventListener('click', () => {
-      closeSettings();
-      setTimeout(() => openInstallModal(), 250);
-    });
-    document.getElementById('btnCloseInstallModal').addEventListener('click', () => closeInstallModal());
+    const btnHeaderInstall = document.getElementById('btnHeaderInstall');
+    if (btnHeaderInstall) btnHeaderInstall.addEventListener('click', () => openInstallModal());
 
-    document.getElementById('btnNativeInstallPrompt').addEventListener('click', async () => {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        console.log('User response to install prompt:', outcome);
-        deferredPrompt = null;
-        closeInstallModal();
-      } else {
-        alert('To install, open this link in Chrome or Safari on your phone, then tap "Add to Home Screen"!');
-      }
-    });
+    const btnSettingsInstall = document.getElementById('btnSettingsInstall');
+    if (btnSettingsInstall) {
+      btnSettingsInstall.addEventListener('click', () => {
+        closeSettings();
+        setTimeout(() => openInstallModal(), 250);
+      });
+    }
+
+    const btnCloseInstallModal = document.getElementById('btnCloseInstallModal');
+    if (btnCloseInstallModal) btnCloseInstallModal.addEventListener('click', () => closeInstallModal());
+
+    const btnNativeInstallPrompt = document.getElementById('btnNativeInstallPrompt');
+    if (btnNativeInstallPrompt) {
+      btnNativeInstallPrompt.addEventListener('click', async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          console.log('User response to install prompt:', outcome);
+          deferredPrompt = null;
+          closeInstallModal();
+        } else {
+          alert('To install, open this link in Chrome or Safari on your phone, then tap "Add to Home Screen"!');
+        }
+      });
+    }
 
     // Set PDF.js worker
     if (window.pdfjsLib) {
@@ -1414,11 +1424,16 @@
     }
 
     // Header Buttons
-    document.getElementById('btnHeaderAddExpense').addEventListener('click', openDynamicIsland);
-    document.getElementById('btnDismissIsland').addEventListener('click', dismissDynamicIsland);
+    const btnHeaderAddExpense = document.getElementById('btnHeaderAddExpense');
+    if (btnHeaderAddExpense) btnHeaderAddExpense.addEventListener('click', () => openDynamicIsland());
+
+    const btnDismissIsland = document.getElementById('btnDismissIsland');
+    if (btnDismissIsland) btnDismissIsland.addEventListener('click', () => dismissDynamicIsland());
 
     // Save Expense
-    document.getElementById('btnSaveIslandExpense').addEventListener('click', () => {
+    const btnSaveIslandExpense = document.getElementById('btnSaveIslandExpense');
+    if (btnSaveIslandExpense) {
+      btnSaveIslandExpense.addEventListener('click', () => {
       const amount = parseFloat(islandAmountInput.value);
       if (isNaN(amount) || amount <= 0) return alert('Please enter a valid amount');
 
@@ -1445,6 +1460,7 @@
       saveTransactions();
       showSuccessInIsland(amount, categoryLabel);
     });
+  }
 
     // Parse Statement Text
     function parseStatementText(fullText) {
@@ -1620,29 +1636,36 @@
     }
 
     // Process Raw Pasted Statement Text
-    document.getElementById('btnProcessText').addEventListener('click', () => {
-      const text = document.getElementById('rawTextarea').value.trim();
-      if (!text) return alert('Please paste statement text first');
-      const parsed = parseStatementText(text);
-      if (parsed.length === 0) return alert('No transactions recognized in the pasted text.');
-      const count = mergeTransactions(parsed);
-      alert(`Imported ${count} new transactions successfully!`);
-      document.getElementById('rawTextarea').value = '';
-      closeImportModal();
-    });
+    const btnProcessText = document.getElementById('btnProcessText');
+    if (btnProcessText) {
+      btnProcessText.addEventListener('click', () => {
+        const textarea = document.getElementById('rawTextarea');
+        const text = textarea ? textarea.value.trim() : '';
+        if (!text) return alert('Please paste statement text first');
+        const parsed = parseStatementText(text);
+        if (parsed.length === 0) return alert('No transactions recognized in the pasted text.');
+        const count = mergeTransactions(parsed);
+        alert(`Imported ${count} new transactions successfully!`);
+        if (textarea) textarea.value = '';
+        closeImportModal();
+      });
+    }
 
     // Quick backfill of August 2026 Sample
-    document.getElementById('btnLoadAugustSample').addEventListener('click', async () => {
-      try {
-        const res = await fetch('./sample_august_statement.json');
-        const data = await res.json();
-        mergeTransactions(data);
-        alert('August 2026 statement transactions loaded!');
-        closeImportModal();
-      } catch (e) {
-        alert('Sample statement loaded!');
-      }
-    });
+    const btnLoadAugustSample = document.getElementById('btnLoadAugustSample');
+    if (btnLoadAugustSample) {
+      btnLoadAugustSample.addEventListener('click', async () => {
+        try {
+          const res = await fetch('./sample_august_statement.json');
+          const data = await res.json();
+          mergeTransactions(data);
+          alert('August 2026 statement transactions loaded!');
+          closeImportModal();
+        } catch (e) {
+          alert('Sample statement loaded!');
+        }
+      });
+    }
 
     // Settings Modal
     const settingsModal = document.getElementById('settingsModal');
@@ -1683,93 +1706,129 @@
     }
 
     // Enable / Calibrate iOS Motion Button
-    document.getElementById('btnEnableIosMotion').addEventListener('click', async () => {
-      const statusEl = document.getElementById('iosMotionStatusText');
-      if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-        try {
-          const response = await DeviceMotionEvent.requestPermission();
-          if (response === 'granted') {
-            motionPermissionGranted = true;
-            statusEl.innerText = '✅ Motion sensors active! Firmly double tap back of phone to test.';
-            statusEl.className = 'text-[10px] text-emerald-600 font-bold';
-            if (navigator.vibrate) navigator.vibrate([40, 60, 40]);
-          } else {
-            statusEl.innerText = '⚠️ Permission not granted. Allow motion sensors in Safari settings.';
-            statusEl.className = 'text-[10px] text-amber-600 font-medium';
+    const btnEnableIosMotion = document.getElementById('btnEnableIosMotion');
+    if (btnEnableIosMotion) {
+      btnEnableIosMotion.addEventListener('click', async () => {
+        const statusEl = document.getElementById('iosMotionStatusText');
+        if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+          try {
+            const response = await DeviceMotionEvent.requestPermission();
+            if (response === 'granted') {
+              motionPermissionGranted = true;
+              if (statusEl) {
+                statusEl.innerText = '✅ Motion sensors active! Firmly double tap back of phone to test.';
+                statusEl.className = 'text-[10px] text-emerald-600 font-bold';
+              }
+              if (navigator.vibrate) navigator.vibrate([40, 60, 40]);
+            } else {
+              if (statusEl) {
+                statusEl.innerText = '⚠️ Permission not granted. Allow motion sensors in Safari settings.';
+                statusEl.className = 'text-[10px] text-amber-600 font-medium';
+              }
+            }
+          } catch (e) {
+            if (statusEl) {
+              statusEl.innerText = '✅ Motion sensors ready!';
+              statusEl.className = 'text-[10px] text-emerald-600 font-medium';
+            }
           }
-        } catch (e) {
-          statusEl.innerText = '✅ Motion sensors ready!';
-          statusEl.className = 'text-[10px] text-emerald-600 font-medium';
+        } else {
+          if (statusEl) {
+            statusEl.innerText = '✅ Motion sensors are fully enabled on your device!';
+            statusEl.className = 'text-[10px] text-emerald-600 font-medium';
+          }
+          if (navigator.vibrate) navigator.vibrate(50);
         }
-      } else {
-        statusEl.innerText = '✅ Motion sensors are fully enabled on your device!';
-        statusEl.className = 'text-[10px] text-emerald-600 font-medium';
-        if (navigator.vibrate) navigator.vibrate(50);
-      }
-    });
+      });
+    }
 
     // Test Double Tap button
-    document.getElementById('btnTestDoubleTap').addEventListener('click', () => {
-      closeSettings();
-      setTimeout(() => {
-        openDynamicIsland();
-      }, 300);
-    });
+    const btnTestDoubleTap = document.getElementById('btnTestDoubleTap');
+    if (btnTestDoubleTap) {
+      btnTestDoubleTap.addEventListener('click', () => {
+        closeSettings();
+        setTimeout(() => {
+          openDynamicIsland();
+        }, 300);
+      });
+    }
 
-    document.getElementById('btnHeaderSettings').addEventListener('click', () => openSettings());
-    document.getElementById('btnNavSettings').addEventListener('click', () => openSettings());
-    document.getElementById('btnCloseSettings').addEventListener('click', () => closeSettings());
-    document.getElementById('btnOpenSettingsFromIsland').addEventListener('click', () => {
-      dismissDynamicIsland();
-      setTimeout(openSettings, 350);
-    });
+    const btnHeaderSettings = document.getElementById('btnHeaderSettings');
+    if (btnHeaderSettings) btnHeaderSettings.addEventListener('click', () => openSettings());
+
+    const btnNavSettings = document.getElementById('btnNavSettings');
+    if (btnNavSettings) btnNavSettings.addEventListener('click', () => openSettings());
+
+    const btnCloseSettings = document.getElementById('btnCloseSettings');
+    if (btnCloseSettings) btnCloseSettings.addEventListener('click', () => closeSettings());
+
+    const btnOpenSettingsFromIsland = document.getElementById('btnOpenSettingsFromIsland');
+    if (btnOpenSettingsFromIsland) {
+      btnOpenSettingsFromIsland.addEventListener('click', () => {
+        dismissDynamicIsland();
+        setTimeout(openSettings, 350);
+      });
+    }
 
     // Add category button in Settings
-    document.getElementById('btnAddCategory').addEventListener('click', () => {
-      const emoji = document.getElementById('newCatEmojiSelect').value;
-      const nameInput = document.getElementById('newCatNameInput');
-      const name = nameInput.value.trim();
-      if (!name) {
-        alert('Please enter a category name');
-        return;
-      }
-      const newId = name.toUpperCase().replace(/[^A-Z0-9]/g, '_') + '_' + Date.now().toString().slice(-4);
-      customCategories.push({
-        id: newId,
-        label: name,
-        icon: emoji
+    const btnAddCategory = document.getElementById('btnAddCategory');
+    if (btnAddCategory) {
+      btnAddCategory.addEventListener('click', () => {
+        const emojiEl = document.getElementById('newCatEmojiSelect');
+        const nameInput = document.getElementById('newCatNameInput');
+        const emoji = emojiEl ? emojiEl.value : '🍔';
+        const name = nameInput ? nameInput.value.trim() : '';
+        if (!name) {
+          alert('Please enter a category name');
+          return;
+        }
+        const newId = name.toUpperCase().replace(/[^A-Z0-9]/g, '_') + '_' + Date.now().toString().slice(-4);
+        customCategories.push({
+          id: newId,
+          label: name,
+          icon: emoji
+        });
+        if (nameInput) nameInput.value = '';
+        saveCustomCategories();
       });
-      nameInput.value = '';
-      saveCustomCategories();
-    });
+    }
 
     // Reset categories button in Settings
-    document.getElementById('btnResetCategories').addEventListener('click', () => {
-      if (confirm('Reset categories back to defaults?')) {
-        customCategories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
-        selectedCategory = customCategories[0].id;
-        saveCustomCategories();
-      }
-    });
+    const btnResetCategories = document.getElementById('btnResetCategories');
+    if (btnResetCategories) {
+      btnResetCategories.addEventListener('click', () => {
+        if (confirm('Reset categories back to defaults?')) {
+          customCategories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+          selectedCategory = customCategories[0].id;
+          saveCustomCategories();
+        }
+      });
+    }
 
     // Clear All Data
-    document.getElementById('btnClearAllData').addEventListener('click', () => {
-      if (confirm('Are you sure you want to clear all transactions and reset bank accounts for a completely fresh start? Only the default Cash account will remain.')) {
-        transactions = [];
-        bankAccounts = ["Cash"];
-        selectedAccount = "Cash";
-        currentAccountFilter = "ALL";
-        localStorage.setItem('ep_selected_account', "Cash");
-        saveBankAccounts();
-        saveTransactions();
-        closeSettings();
-        alert('All transactions cleared! Bank accounts reset to default Cash.');
-      }
-    });
+    const btnClearAllData = document.getElementById('btnClearAllData');
+    if (btnClearAllData) {
+      btnClearAllData.addEventListener('click', () => {
+        if (confirm('Are you sure you want to clear all transactions and reset bank accounts for a completely fresh start? Only the default Cash account will remain.')) {
+          transactions = [];
+          bankAccounts = ["Cash"];
+          selectedAccount = "Cash";
+          currentAccountFilter = "ALL";
+          localStorage.setItem('ep_selected_account', "Cash");
+          saveBankAccounts();
+          saveTransactions();
+          closeSettings();
+          alert('All transactions cleared! Bank accounts reset to default Cash.');
+        }
+      });
+    }
 
-    document.getElementById('btnNavHome').addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+    const btnNavHome = document.getElementById('btnNavHome');
+    if (btnNavHome) {
+      btnNavHome.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
 
     const btnNavTransactions = document.getElementById('btnNavTransactions');
     if (btnNavTransactions) {
@@ -1786,7 +1845,8 @@
     }
 
     // Search filter
-    document.getElementById('searchInput').addEventListener('input', renderTransactions);
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) searchInput.addEventListener('input', renderTransactions);
 
     // ==========================================
     // 1-TAP EDIT TRANSACTION MODAL LOGIC
@@ -1861,40 +1921,49 @@
       if (!fromPop) popModalStateIfNeeded('editModal');
     }
 
-    document.getElementById('btnCloseEditModal').addEventListener('click', () => closeEditModal());
+    const btnCloseEditModal = document.getElementById('btnCloseEditModal');
+    if (btnCloseEditModal) btnCloseEditModal.addEventListener('click', () => closeEditModal());
 
     // Save edited transaction
-    document.getElementById('btnSaveTx').addEventListener('click', () => {
-      if (!currentEditingId) return;
-      const amountVal = parseFloat(document.getElementById('editTxAmount').value);
-      const actionVal = document.getElementById('editTxAction').value.trim();
+    const btnSaveTx = document.getElementById('btnSaveTx');
+    if (btnSaveTx) {
+      btnSaveTx.addEventListener('click', () => {
+        if (!currentEditingId) return;
+        const amountEl = document.getElementById('editTxAmount');
+        const actionEl = document.getElementById('editTxAction');
+        const amountVal = amountEl ? parseFloat(amountEl.value) : NaN;
+        const actionVal = actionEl ? actionEl.value.trim() : '';
 
-      if (isNaN(amountVal) || amountVal <= 0) {
-        alert('Please enter a valid amount');
-        return;
-      }
+        if (isNaN(amountVal) || amountVal <= 0) {
+          alert('Please enter a valid amount');
+          return;
+        }
 
-      const txIndex = transactions.findIndex(t => (t.id && t.id === currentEditingId) || (t.upi_id && t.upi_id === currentEditingId));
-      if (txIndex !== -1) {
-        transactions[txIndex].amount = amountVal;
-        transactions[txIndex].action = actionVal || `Paid to ${getCategoryName(editSelectedCat)}`;
-        transactions[txIndex].category = editSelectedCat;
-        transactions[txIndex].bank = editSelectedBank;
+        const txIndex = transactions.findIndex(t => (t.id && t.id === currentEditingId) || (t.upi_id && t.upi_id === currentEditingId));
+        if (txIndex !== -1) {
+          transactions[txIndex].amount = amountVal;
+          transactions[txIndex].action = actionVal || `Paid to ${getCategoryName(editSelectedCat)}`;
+          transactions[txIndex].category = editSelectedCat;
+          transactions[txIndex].bank = editSelectedBank;
 
-        saveTransactions();
-        closeEditModal();
-      }
-    });
+          saveTransactions();
+          closeEditModal();
+        }
+      });
+    }
 
     // Delete transaction
-    document.getElementById('btnDeleteTx').addEventListener('click', () => {
-      if (!currentEditingId) return;
-      if (confirm('Delete this transaction?')) {
-        transactions = transactions.filter(t => (t.id !== currentEditingId) && (t.upi_id !== currentEditingId));
-        saveTransactions();
-        closeEditModal();
-      }
-    });
+    const btnDeleteTx = document.getElementById('btnDeleteTx');
+    if (btnDeleteTx) {
+      btnDeleteTx.addEventListener('click', () => {
+        if (!currentEditingId) return;
+        if (confirm('Delete this transaction?')) {
+          transactions = transactions.filter(t => (t.id !== currentEditingId) && (t.upi_id !== currentEditingId));
+          saveTransactions();
+          closeEditModal();
+        }
+      });
+    }
 
     // ==========================================
     // IPHONE BACK-TAP (DOUBLE TAP) & SHAKE ENGINE
