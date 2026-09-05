@@ -1393,7 +1393,7 @@
     const islandAmountInput = document.getElementById('islandAmountInput');
     const islandNoteInput = document.getElementById('islandNoteInput');
 
-    function openDynamicIsland(pushState = true) {
+    function openDynamicIsland(pushState = true, instant = false) {
       if (pushState) pushModalState('dynamicIsland');
       isIslandActive = true;
       clearDynamicIslandForm();
@@ -1409,9 +1409,13 @@
         dynamicIsland.classList.add('island-open');
       }
 
-      setTimeout(() => {
+      if (instant) {
         if (islandAmountInput) islandAmountInput.focus();
-      }, 250);
+      } else {
+        setTimeout(() => {
+          if (islandAmountInput) islandAmountInput.focus();
+        }, 150);
+      }
     }
 
     function dismissDynamicIsland(fromPop = false) {
@@ -2202,19 +2206,13 @@
       const hashParam = window.location.hash;
 
       if (actionParam === 'quick-log' || hashParam === '#log' || hashParam === '#quick') {
-        setTimeout(() => {
-          if (navigator.vibrate) navigator.vibrate(40);
-          openDynamicIsland();
-        }, 350);
+        if (navigator.vibrate) navigator.vibrate(40);
+        openDynamicIsland(true, true);
       } else if (actionParam === 'transactions' || hashParam === '#transactions') {
-        setTimeout(() => {
-          const txSection = document.getElementById('transactionsSection');
-          if (txSection) txSection.scrollIntoView({ behavior: 'smooth' });
-        }, 350);
+        const txSection = document.getElementById('transactionsSection');
+        if (txSection) txSection.scrollIntoView({ behavior: 'smooth' });
       } else if (actionParam === 'import' || hashParam === '#import') {
-        setTimeout(() => {
-          openImportModal();
-        }, 350);
+        openImportModal(true);
       }
     } catch (e) {}
   </script>
