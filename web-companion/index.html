@@ -1052,16 +1052,8 @@
     function clearDynamicIslandForm() {
       document.getElementById('islandAmountInput').value = '';
       document.getElementById('islandNoteInput').value = '';
-      selectedCategory = 'FOOD_DINING';
-      document.querySelectorAll('.cat-btn').forEach(b => {
-        if (b.getAttribute('data-cat') === 'FOOD_DINING') {
-          b.classList.remove('bg-white/[0.06]', 'text-[#C4C7D0]', 'font-medium');
-          b.classList.add('bg-white', 'text-[#090A0E]', 'active', 'font-bold');
-        } else {
-          b.classList.remove('bg-white', 'text-[#090A0E]', 'active', 'font-bold');
-          b.classList.add('bg-white/[0.06]', 'text-[#C4C7D0]', 'font-medium');
-        }
-      });
+      selectedCategory = customCategories[0]?.id || 'FOOD_DINING';
+      renderIslandCategories();
     }
 
     // Master Render Function
@@ -1141,7 +1133,7 @@
 
         const item = document.createElement('div');
         item.className = 'bg-white p-3.5 rounded-xl border border-[#E9EBEF] flex items-center justify-between hover:border-[#111317] hover:shadow-xs cursor-pointer transition active:scale-[0.99]';
-        item.onclick = () => openEditModal(t.id);
+        item.onclick = () => openEditModal(t.id || t.upi_id);
         item.innerHTML = `
           <div class="flex items-center space-x-3 min-w-0 flex-1 mr-2">
             <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs shrink-0 ${iconBg}">
@@ -1336,23 +1328,26 @@
     // Save Expense
     document.getElementById('btnSaveIslandExpense').addEventListener('click', () => {
       const amount = parseFloat(islandAmountInput.value);
-      if (!amount || amount <= 0) return alert('Please enter a valid amount');
+      if (isNaN(amount) || amount <= 0) return alert('Please enter a valid amount');
 
       const customNote = islandNoteInput.value.trim();
-      const categoryLabel = CATEGORY_NAMES[selectedCategory] || 'Expense';
+      const categoryLabel = getCategoryName(selectedCategory) || 'Expense';
       const actionName = customNote ? `Paid to ${customNote}` : `Paid to ${categoryLabel}`;
 
       const now = new Date();
       const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' +
                       now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
+      const txId = 'LOCAL_' + Date.now();
       transactions.unshift({
+        id: txId,
         date: dateStr,
         action: actionName,
         amount: amount,
+        category: selectedCategory,
         type: selectedCategory === 'FRIENDS_SPLIT' ? 'SETTLEMENT' : 'EXPENSE',
-        upi_id: 'LOCAL_' + Date.now(),
-        bank: selectedAccount
+        upi_id: txId,
+        bank: selectedAccount || bankAccounts[0] || 'Cash'
       });
 
       saveTransactions();
@@ -1680,12 +1675,12 @@
     let editSelectedBank = 'State Bank of India 7067';
 
     function openEditModal(id) {
-      const tx = transactions.find(t => t.id === id);
+      const tx = transactions.find(t => (t.id && t.id === id) || (t.upi_id && t.upi_id === id));
       if (!tx) return;
 
       currentEditingId = id;
       editSelectedCat = tx.category || customCategories[0]?.id || 'OTHER';
-      editSelectedBank = tx.bank || 'Cash';
+      editSelectedBank = tx.bank || bankAccounts[0] || 'Cash';
 
       document.getElementById('editTxId').value = id;
       document.getElementById('editTxAmount').value = tx.amount;
@@ -1717,15 +1712,16 @@
       const accContainer = document.getElementById('editAccountContainer');
       accContainer.innerHTML = '';
       bankAccounts.forEach(acc => {
+        const accName = typeof acc === 'object' ? (acc.name || '') : acc;
         const btn = document.createElement('button');
         btn.type = 'button';
-        const isSelected = acc.name === editSelectedBank;
+        const isSelected = accName === editSelectedBank;
         btn.className = isSelected 
           ? 'py-1.5 px-3 rounded-xl text-xs font-bold border-2 border-[#111317] bg-[#111317] text-white'
           : 'py-1.5 px-3 rounded-xl text-xs font-medium border border-[#E3E6EB] bg-[#F8F9FA] text-[#454854]';
-        btn.innerText = `${acc.icon} ${acc.name}`;
+        btn.innerText = `🏦 ${accName}`;
         btn.onclick = () => {
-          editSelectedBank = acc.name;
+          editSelectedBank = accName;
           openEditModal(id);
         };
         accContainer.appendChild(btn);
@@ -1752,15 +1748,14 @@
         return;
       }
 
-      const txIndex = transactions.findIndex(t => t.id === currentEditingId);
+      const txIndex = transactions.findIndex(t => (t.id && t.id === currentEditingId) || (t.upi_id && t.upi_id === currentEditingId));
       if (txIndex !== -1) {
         transactions[txIndex].amount = amountVal;
-        transactions[txIndex].action = actionVal || `Paid to ${editSelectedCat}`;
+        transactions[txIndex].action = actionVal || `Paid to ${getCategoryName(editSelectedCat)}`;
         transactions[txIndex].category = editSelectedCat;
         transactions[txIndex].bank = editSelectedBank;
 
-        localStorage.setItem('ep_transactions_v2', JSON.stringify(transactions));
-        renderAll();
+        saveTransactions();
         closeEditModal();
       }
     });
@@ -1769,9 +1764,8 @@
     document.getElementById('btnDeleteTx').addEventListener('click', () => {
       if (!currentEditingId) return;
       if (confirm('Delete this transaction?')) {
-        transactions = transactions.filter(t => t.id !== currentEditingId);
-        localStorage.setItem('ep_transactions_v2', JSON.stringify(transactions));
-        renderAll();
+        transactions = transactions.filter(t => (t.id !== currentEditingId) && (t.upi_id !== currentEditingId));
+        saveTransactions();
         closeEditModal();
       }
     });
