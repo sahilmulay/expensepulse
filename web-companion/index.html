@@ -237,18 +237,12 @@
           <p class="text-xs text-[#717684] truncate">Personal Expense Manager</p>
         </div>
         
-        <!-- Header Actions: Install PWA + Import PDF + Add + Settings -->
+        <!-- Header Actions: Install PWA + Add + Settings -->
         <div class="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
           <!-- Install Web App Button -->
-          <button id="btnHeaderInstall" class="bg-[#F5F6F8] hover:bg-[#EAECEF] border border-[#E3E6EB] text-[#111317] px-2 sm:px-2.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-1 transition active:scale-95 shadow-2xs" title="Download & Install Web App">
+          <button id="btnHeaderInstall" class="bg-[#F5F6F8] hover:bg-[#EAECEF] border border-[#E3E6EB] text-[#111317] px-2.5 sm:px-3 py-2 rounded-xl text-xs font-bold flex items-center space-x-1 transition active:scale-95 shadow-2xs" title="Download & Install Web App">
             <i class="fa-solid fa-download text-[#2563EB] text-[11px]"></i>
             <span class="hidden xs:inline">App</span>
-          </button>
-
-          <!-- Import Statement PDF Button -->
-          <button id="btnHeaderImportPDF" class="bg-[#F5F6F8] hover:bg-[#EAECEF] border border-[#E3E6EB] text-[#111317] px-2.5 sm:px-3 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition active:scale-95 shadow-2xs" title="Import UPI Statement PDF">
-            <i class="fa-solid fa-file-pdf text-[#DC2626]"></i>
-            <span class="hidden xs:inline">Import</span>
           </button>
 
           <!-- Add Expense Button -->
@@ -258,7 +252,7 @@
           </button>
 
           <!-- Settings Button -->
-          <button id="btnHeaderSettings" class="w-9 h-9 rounded-xl bg-[#F5F6F8] hover:bg-[#EAECEF] border border-[#E3E6EB] text-[#454854] flex items-center justify-center transition active:scale-95 text-xs" title="Settings & Bank Accounts">
+          <button id="btnHeaderSettings" class="w-9 h-9 rounded-xl bg-[#F5F6F8] hover:bg-[#EAECEF] border border-[#E3E6EB] text-[#454854] flex items-center justify-center transition active:scale-95 text-xs" title="Settings & Preferences">
             <i class="fa-solid fa-gear"></i>
           </button>
         </div>
@@ -344,7 +338,7 @@
       </div>
 
       <!-- Transactions List -->
-      <div class="space-y-2.5">
+      <div id="transactionsSection" class="space-y-2.5 pt-1">
         <div class="flex items-center justify-between px-1">
           <h2 class="text-xs font-bold text-[#111317] uppercase tracking-wider">Transactions</h2>
           <span class="text-xs text-[#8C919E] font-medium" id="txCountBadge">0 items</span>
@@ -366,17 +360,17 @@
     </main>
 
     <!-- Bottom Navigation Bar -->
-    <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto w-full bg-white/95 backdrop-blur border-t border-[#E9EBEF] py-2.5 px-4 z-30 shadow-lg">
+    <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto w-full bg-white/95 backdrop-blur border-t border-[#E9EBEF] py-2 px-4 z-30 shadow-lg">
       <div class="grid grid-cols-3 text-center text-xs">
-        <button id="btnNavHome" class="nav-item text-[#111317] font-bold flex flex-col items-center py-1">
+        <button id="btnNavHome" class="nav-item text-[#111317] font-bold flex flex-col items-center py-1 transition active:scale-95">
           <i class="fa-solid fa-wallet text-sm mb-1"></i>
           <span class="text-[11px]">Dashboard</span>
         </button>
-        <button id="btnNavImport" class="nav-item text-[#717684] hover:text-[#111317] flex flex-col items-center py-1">
-          <i class="fa-solid fa-file-pdf text-sm mb-1 text-[#DC2626]"></i>
-          <span class="text-[11px]">Import PDF</span>
+        <button id="btnNavTransactions" class="nav-item text-[#717684] hover:text-[#111317] flex flex-col items-center py-1 transition active:scale-95">
+          <i class="fa-solid fa-receipt text-sm mb-1"></i>
+          <span class="text-[11px]">Transactions</span>
         </button>
-        <button id="btnNavSettings" class="nav-item text-[#717684] hover:text-[#111317] flex flex-col items-center py-1">
+        <button id="btnNavSettings" class="nav-item text-[#717684] hover:text-[#111317] flex flex-col items-center py-1 transition active:scale-95">
           <i class="fa-solid fa-gear text-sm mb-1"></i>
           <span class="text-[11px]">Settings</span>
         </button>
@@ -559,15 +553,15 @@
       </div>
     </div>
 
-    <!-- SETTINGS & BUDGET MODAL -->
+    <!-- SETTINGS & PREFERENCES MODAL -->
     <div id="settingsModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center hidden p-3 sm:p-4">
       <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-[#E9EBEF] flex flex-col max-h-[85vh] overflow-hidden">
         
         <!-- Sticky Header with Fixed Close Button -->
         <div class="flex justify-between items-center border-b border-[#F0F2F5] px-5 py-4 shrink-0 bg-white z-10">
           <div>
-            <h2 class="text-sm font-bold text-[#111317]">Settings & Budget</h2>
-            <p class="text-[11px] text-[#8C919E]">Configure monthly budget & bank accounts</p>
+            <h2 class="text-sm font-bold text-[#111317]">Settings & Preferences</h2>
+            <p class="text-[11px] text-[#8C919E]">Budget, accounts & statements</p>
           </div>
           <button id="btnCloseSettings" class="w-8 h-8 rounded-full bg-[#F5F6F8] hover:bg-[#EAECEF] active:scale-95 flex items-center justify-center text-[#60646F] text-xs transition cursor-pointer" title="Close Settings">
             <i class="fa-solid fa-xmark text-sm"></i>
@@ -576,66 +570,74 @@
 
         <!-- Scrollable Settings Body -->
         <div class="p-4 sm:p-5 space-y-4 overflow-y-auto flex-1 overscroll-contain">
-          <!-- Monthly Expense Budget Section -->
-          <div class="bg-[#F8F9FA] p-3.5 rounded-2xl border border-[#E9EBEF] space-y-2.5">
-            <div class="flex justify-between items-center">
-              <label class="block text-xs font-bold text-[#111317]">Monthly Expense Budget</label>
-              <span class="text-[10px] text-[#8C919E]">Target Limit</span>
-            </div>
-            <div class="flex items-center space-x-2">
-              <div class="relative flex-1 min-w-0">
-                <span class="absolute left-3 top-2 text-xs font-bold text-[#8C919E]">₹</span>
-                <input id="monthlyBudgetInput" type="number" step="100" placeholder="10000" 
-                       class="w-full bg-white border border-[#D6D9E0] rounded-xl pl-7 pr-3 py-2 text-xs text-[#111317] font-bold focus:outline-none focus:border-[#111317]">
+
+          <!-- 1. DATA & STATEMENTS (Prominent Action Card) -->
+          <div class="space-y-1.5">
+            <span class="text-[10px] font-bold text-[#8C919E] uppercase tracking-wider px-1">Statement Import</span>
+            <button id="btnSettingsImportPDF" class="w-full bg-[#111317] hover:bg-[#252830] text-white p-3.5 rounded-2xl flex items-center justify-between transition active:scale-98 shadow-sm">
+              <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 rounded-xl bg-white/10 text-white flex items-center justify-center text-sm">
+                  <i class="fa-solid fa-file-pdf text-red-400 text-base"></i>
+                </div>
+                <div class="text-left">
+                  <div class="text-xs font-bold text-white">Import Statement (PDF)</div>
+                  <div class="text-[10px] text-[#8C919E]">Google Pay / Bank statement auto-parser</div>
+                </div>
               </div>
-              <button id="btnSaveBudget" class="bg-[#111317] hover:bg-[#252830] text-white px-3.5 py-2 rounded-xl text-xs font-bold transition active:scale-95 whitespace-nowrap shrink-0">
-                Save Limit
-              </button>
-            </div>
-            <p class="text-[10px] text-[#8C919E]">The dashboard shows how much money is left from this budget.</p>
-          </div>
-
-          <!-- Add Bank Account Section -->
-          <div class="bg-[#F8F9FA] p-3.5 rounded-2xl border border-[#E9EBEF] space-y-2.5">
-            <label class="block text-xs font-bold text-[#111317]">Add New Bank Account</label>
-            <div class="flex items-center space-x-2">
-              <input id="newBankInput" type="text" placeholder="e.g. HDFC Bank, Kotak, Axis" 
-                     class="flex-1 min-w-0 bg-white border border-[#D6D9E0] rounded-xl px-3 py-2 text-xs text-[#111317] focus:outline-none focus:border-[#111317]">
-              <button id="btnAddBank" class="bg-[#111317] hover:bg-[#252830] text-white px-3.5 py-2 rounded-xl text-xs font-bold transition active:scale-95 whitespace-nowrap shrink-0">
-                + Add
-              </button>
-            </div>
-          </div>
-
-          <!-- Existing Bank Accounts List -->
-          <div>
-            <label class="block text-xs font-bold text-[#111317] mb-2">Active Accounts</label>
-            <div id="bankAccountsList" class="space-y-2">
-              <!-- Dynamically populated -->
-            </div>
-          </div>
-
-          <!-- Manage Categories Section -->
-          <div class="bg-[#F8F9FA] p-3.5 rounded-2xl border border-[#E9EBEF] space-y-3">
-            <div class="flex justify-between items-center">
-              <div>
-                <label class="block text-xs font-bold text-[#111317]">Manage Categories</label>
-                <p class="text-[10px] text-[#8C919E]">Customize categories for quick log & stats</p>
+              <div class="flex items-center space-x-1 text-xs text-[#8C919E]">
+                <span>Upload</span>
+                <i class="fa-solid fa-chevron-right text-[10px]"></i>
               </div>
-              <button id="btnResetCategories" class="text-[10px] text-[#60646F] hover:text-[#111317] font-semibold bg-white border border-[#E3E6EB] px-2.5 py-1 rounded-lg transition active:scale-95">
-                Reset Default
-              </button>
-            </div>
+            </button>
+          </div>
 
-            <!-- Existing Categories Badges List -->
-            <div id="settingsCategoryList" class="flex flex-wrap gap-1.5 pt-1">
-              <!-- Dynamically populated via renderSettingsCategories() -->
-            </div>
-
-            <!-- Add New Category Sub-Form (Strictly bounded with min-w-0 and shrink-0) -->
-            <div class="pt-2 border-t border-[#EAECEF] space-y-2">
-              <span class="text-[10px] font-bold text-[#60646F] uppercase tracking-wider block">Add New Category</span>
+          <!-- 2. MONTHLY EXPENSE BUDGET -->
+          <div class="space-y-1.5">
+            <span class="text-[10px] font-bold text-[#8C919E] uppercase tracking-wider px-1">Monthly Spending Limit</span>
+            <div class="bg-[#F8F9FA] p-3.5 rounded-2xl border border-[#E9EBEF]">
               <div class="flex items-center space-x-2">
+                <div class="relative flex-1 min-w-0">
+                  <span class="absolute left-3 top-2 text-xs font-bold text-[#8C919E]">₹</span>
+                  <input id="monthlyBudgetInput" type="number" step="100" placeholder="10000" 
+                         class="w-full bg-white border border-[#D6D9E0] rounded-xl pl-7 pr-3 py-2 text-xs text-[#111317] font-bold focus:outline-none focus:border-[#111317]">
+                </div>
+                <button id="btnSaveBudget" class="bg-[#111317] hover:bg-[#252830] text-white px-3.5 py-2 rounded-xl text-xs font-bold transition active:scale-95 whitespace-nowrap shrink-0">
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. BANK ACCOUNTS -->
+          <div class="space-y-1.5">
+            <span class="text-[10px] font-bold text-[#8C919E] uppercase tracking-wider px-1">Bank Accounts</span>
+            <div class="bg-[#F8F9FA] p-3.5 rounded-2xl border border-[#E9EBEF] space-y-3">
+              <div class="flex items-center space-x-2">
+                <input id="newBankInput" type="text" placeholder="Add bank (e.g. HDFC, Kotak)" 
+                       class="flex-1 min-w-0 bg-white border border-[#D6D9E0] rounded-xl px-3 py-2 text-xs text-[#111317] focus:outline-none focus:border-[#111317]">
+                <button id="btnAddBank" class="bg-[#111317] hover:bg-[#252830] text-white px-3.5 py-2 rounded-xl text-xs font-bold transition active:scale-95 whitespace-nowrap shrink-0">
+                  + Add
+                </button>
+              </div>
+              <div id="bankAccountsList" class="space-y-1.5">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. MANAGE CATEGORIES -->
+          <div class="space-y-1.5">
+            <div class="flex justify-between items-center px-1">
+              <span class="text-[10px] font-bold text-[#8C919E] uppercase tracking-wider">Categories</span>
+              <button id="btnResetCategories" class="text-[10px] text-[#60646F] hover:text-[#111317] font-semibold bg-[#F0F2F5] hover:bg-[#EAECEF] px-2 py-0.5 rounded-lg transition active:scale-95">
+                Reset Defaults
+              </button>
+            </div>
+            <div class="bg-[#F8F9FA] p-3.5 rounded-2xl border border-[#E9EBEF] space-y-2.5">
+              <div id="settingsCategoryList" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto no-scrollbar pt-0.5">
+                <!-- Dynamically populated via renderSettingsCategories() -->
+              </div>
+              <div class="pt-2 border-t border-[#EAECEF] flex items-center space-x-2">
                 <select id="newCatEmojiSelect" class="bg-white border border-[#D6D9E0] rounded-xl px-2 py-2 text-base focus:outline-none focus:border-[#111317] shrink-0 w-16 text-center cursor-pointer">
                   <option value="🍔">🍔 Food</option>
                   <option value="☕">☕ Coffee</option>
@@ -654,7 +656,7 @@
                   <option value="🍻">🍻 Drinks</option>
                   <option value="📝">📝 Other</option>
                 </select>
-                <input id="newCatNameInput" type="text" placeholder="Category name (e.g. Gym)"
+                <input id="newCatNameInput" type="text" placeholder="New category name"
                        class="flex-1 min-w-0 bg-white border border-[#D6D9E0] rounded-xl px-3 py-2 text-xs text-[#111317] focus:outline-none focus:border-[#111317]">
                 <button id="btnAddCategory" class="bg-[#111317] hover:bg-[#252830] text-white px-3.5 py-2 rounded-xl text-xs font-bold transition active:scale-95 whitespace-nowrap shrink-0">
                   + Add
@@ -663,70 +665,67 @@
             </div>
           </div>
 
-          <!-- iPhone Double Tap Gestures Section -->
-          <div class="p-3.5 bg-[#F8F9FA] rounded-2xl border border-[#E9EBEF] space-y-2.5">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center space-x-2">
-                <div class="w-7 h-7 rounded-xl bg-[#111317] text-white flex items-center justify-center text-xs">
-                  <i class="fa-brands fa-apple text-sm"></i>
+          <!-- 5. PHONE GESTURES & SHORTCUTS -->
+          <div class="space-y-1.5">
+            <span class="text-[10px] font-bold text-[#8C919E] uppercase tracking-wider px-1">Quick Gestures</span>
+            <div class="bg-[#F8F9FA] rounded-2xl border border-[#E9EBEF] divide-y divide-[#EAECEF]">
+              <!-- iPhone Double Tap -->
+              <div class="p-3.5 flex items-center justify-between">
+                <div class="flex items-center space-x-2.5">
+                  <div class="w-7 h-7 rounded-xl bg-[#111317] text-white flex items-center justify-center text-xs">
+                    <i class="fa-brands fa-apple text-xs"></i>
+                  </div>
+                  <div>
+                    <div class="text-xs font-bold text-[#111317]">iPhone Double Back-Tap</div>
+                    <div class="text-[10px] text-[#8C919E]">Tap back of phone twice to log</div>
+                  </div>
                 </div>
-                <div>
-                  <div class="text-xs font-bold text-[#111317]">iPhone Double Back-Tap</div>
-                  <div class="text-[10px] text-[#8C919E]">Tap back of phone twice to open Quick-Add</div>
-                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" id="toggleDoubleTapSetting" class="sr-only peer" checked>
+                  <div class="w-9 h-5 bg-[#D6D9E0] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#111317]"></div>
+                </label>
               </div>
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" id="toggleDoubleTapSetting" class="sr-only peer" checked>
-                <div class="w-10 h-5 bg-[#D6D9E0] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#111317]"></div>
-              </label>
-            </div>
 
-            <div class="flex space-x-2 pt-1">
-              <button type="button" id="btnEnableIosMotion" class="flex-1 bg-white hover:bg-[#F5F6F8] border border-[#D6D9E0] text-[#111317] font-semibold py-2 px-3 rounded-xl text-xs transition flex items-center justify-center space-x-1.5 active:scale-95 shadow-2xs">
-                <i class="fa-solid fa-shield-halved text-[#2563EB] text-xs"></i>
-                <span>Enable Sensor / Calibrate</span>
+              <!-- Shake Phone -->
+              <div class="p-3.5 flex items-center justify-between">
+                <div class="flex items-center space-x-2.5">
+                  <div class="w-7 h-7 rounded-xl bg-[#111317] text-white flex items-center justify-center text-xs">
+                    <i class="fa-solid fa-hand text-xs"></i>
+                  </div>
+                  <div>
+                    <div class="text-xs font-bold text-[#111317]">Shake Phone to Log</div>
+                    <div class="text-[10px] text-[#8C919E]">Rapid double-shake</div>
+                  </div>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" id="toggleShakeSetting" class="sr-only peer" checked>
+                  <div class="w-9 h-5 bg-[#D6D9E0] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#111317]"></div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- 6. APP MAINTENANCE & DATA -->
+          <div class="space-y-1.5 pt-1">
+            <span class="text-[10px] font-bold text-[#8C919E] uppercase tracking-wider px-1">App & Data</span>
+            <div class="space-y-2">
+              <div class="grid grid-cols-2 gap-2">
+                <button id="btnSettingsInstall" class="bg-[#F8F9FA] hover:bg-[#EAECEF] border border-[#E3E6EB] text-[#111317] font-semibold py-2.5 px-3 rounded-xl text-xs transition flex items-center justify-center space-x-1.5 active:scale-95">
+                  <i class="fa-solid fa-download text-[#2563EB]"></i>
+                  <span>Install App</span>
+                </button>
+                <button id="btnCheckUpdate" class="bg-[#F8F9FA] hover:bg-[#EAECEF] border border-[#E3E6EB] text-[#111317] font-semibold py-2.5 px-3 rounded-xl text-xs transition flex items-center justify-center space-x-1.5 active:scale-95">
+                  <i class="fa-solid fa-arrows-rotate text-[#059669]"></i>
+                  <span>Reload / Sync</span>
+                </button>
+              </div>
+              <button id="btnClearAllData" class="w-full bg-red-50 hover:bg-red-100 text-red-600 font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center space-x-1.5 active:scale-95 border border-red-100">
+                <i class="fa-solid fa-trash-can"></i>
+                <span>Clear All Transactions (Fresh Start)</span>
               </button>
-              <button type="button" id="btnTestDoubleTap" class="bg-[#111317] hover:bg-[#252830] text-white font-bold py-2 px-3.5 rounded-xl text-xs transition flex items-center justify-center space-x-1.5 active:scale-95 shadow-2xs">
-                <i class="fa-solid fa-bolt text-amber-400 text-xs"></i>
-                <span>Test Island</span>
-              </button>
             </div>
-            <p class="text-[10px] text-[#8C919E]" id="iosMotionStatusText">
-              Tap twice firmly on the back of your phone to trigger the camera popup.
-            </p>
           </div>
 
-          <!-- Shake to Log Toggle Section -->
-          <div class="p-3.5 bg-[#F8F9FA] rounded-2xl border border-[#E9EBEF] flex items-center justify-between">
-            <div>
-              <div class="text-xs font-bold text-[#111317]">Shake Phone to Log</div>
-              <div class="text-[10px] text-[#8C919E]">Requires rapid, deliberate double-shake</div>
-            </div>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" id="toggleShakeSetting" class="sr-only peer" checked>
-              <div class="w-10 h-5 bg-[#D6D9E0] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#111317]"></div>
-            </label>
-          </div>
-
-          <!-- Install Web App Option -->
-          <div class="pt-2 space-y-2">
-            <button id="btnSettingsInstall" class="w-full bg-[#F5F6F8] hover:bg-[#EAECEF] border border-[#E3E6EB] text-[#111317] font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center space-x-1.5">
-              <i class="fa-solid fa-download text-[#2563EB]"></i>
-              <span>Install App on Phone</span>
-            </button>
-            <button id="btnCheckUpdate" class="w-full bg-[#F5F6F8] hover:bg-[#EAECEF] border border-[#E3E6EB] text-[#111317] font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center space-x-1.5">
-              <i class="fa-solid fa-arrows-rotate text-[#059669]"></i>
-              <span>Force Update & Reload Latest Version</span>
-            </button>
-          </div>
-
-          <!-- Clear Data Option -->
-          <div class="pt-3 border-t border-[#F0F2F5]">
-            <button id="btnClearAllData" class="w-full bg-red-50 hover:bg-red-100 text-red-600 font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center space-x-1.5">
-              <i class="fa-solid fa-trash-can"></i>
-              <span>Clear All Transactions (Fresh Start)</span>
-            </button>
-          </div>
         </div>
 
       </div>
@@ -1042,7 +1041,7 @@
         bankAccounts.forEach((acc, idx) => {
           const isCash = acc === 'Cash';
           const row = document.createElement('div');
-          row.className = 'flex items-center justify-between p-3 rounded-xl bg-[#F8F9FA] border border-[#E9EBEF] text-xs';
+          row.className = 'flex items-center justify-between p-2.5 rounded-xl bg-white border border-[#E9EBEF] text-xs shadow-2xs';
           row.innerHTML = `
             <div class="flex items-center space-x-2.5">
               <span class="text-sm">${isCash ? '💵' : '🏦'}</span>
@@ -1548,8 +1547,13 @@
       if (!fromPop) popModalStateIfNeeded('importModal');
     }
 
-    document.getElementById('btnHeaderImportPDF').addEventListener('click', () => openImportModal());
-    document.getElementById('btnNavImport').addEventListener('click', () => openImportModal());
+    const btnSettingsImportPDF = document.getElementById('btnSettingsImportPDF');
+    if (btnSettingsImportPDF) {
+      btnSettingsImportPDF.addEventListener('click', () => {
+        closeSettings();
+        setTimeout(() => openImportModal(), 250);
+      });
+    }
     document.getElementById('btnCloseImportModal').addEventListener('click', () => closeImportModal());
 
     dropZone.addEventListener('click', () => pdfFileInput.click());
@@ -1766,6 +1770,20 @@
     document.getElementById('btnNavHome').addEventListener('click', () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
+
+    const btnNavTransactions = document.getElementById('btnNavTransactions');
+    if (btnNavTransactions) {
+      btnNavTransactions.addEventListener('click', () => {
+        const txSection = document.getElementById('transactionsSection');
+        if (txSection) {
+          txSection.scrollIntoView({ behavior: 'smooth' });
+          const searchInput = document.getElementById('searchInput');
+          if (searchInput) {
+            setTimeout(() => searchInput.focus(), 350);
+          }
+        }
+      });
+    }
 
     // Search filter
     document.getElementById('searchInput').addEventListener('input', renderTransactions);
