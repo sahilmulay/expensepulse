@@ -702,6 +702,30 @@
                   <div class="w-9 h-5 bg-[#D6D9E0] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#111317]"></div>
                 </label>
               </div>
+
+              <!-- Quick Solution Guide: Trigger Outside App / Lock Screen on iOS -->
+              <div class="p-3.5 bg-blue-50/60 rounded-b-2xl border-t border-blue-100 space-y-2">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-1.5">
+                    <i class="fa-brands fa-apple text-blue-600 text-xs"></i>
+                    <span class="text-xs font-bold text-[#111317]">Trigger Outside the App (iOS Guide)</span>
+                  </div>
+                  <span class="text-[9px] font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">Shortcut</span>
+                </div>
+                <p class="text-[11px] text-[#454854] leading-relaxed">
+                  Web apps can only sense physical shake while open. To trigger from your <strong>Lock Screen</strong> or <strong>outside the app anytime</strong>:
+                </p>
+                <ol class="list-decimal list-inside space-y-1 text-[11px] text-[#454854] bg-white p-2.5 rounded-xl border border-blue-100">
+                  <li>Open iPhone <strong class="text-[#111317]">Shortcuts</strong> app ➔ tap <strong class="text-[#111317]">+</strong>.</li>
+                  <li>Add action: <strong class="text-[#111317]">Open URL</strong> ➔ paste app link below.</li>
+                  <li>Go to iPhone <strong class="text-[#111317]">Settings ➔ Accessibility ➔ Touch ➔ Back Tap</strong>.</li>
+                  <li>Set <strong class="text-[#111317]">Double Tap</strong> ➔ your shortcut!</li>
+                </ol>
+                <button type="button" id="btnCopyShortcutUrl" class="w-full bg-white hover:bg-blue-50 text-blue-600 border border-blue-200 font-bold py-2 px-3 rounded-xl text-xs transition flex items-center justify-center space-x-1.5 active:scale-95 shadow-2xs">
+                  <i class="fa-solid fa-copy text-xs"></i>
+                  <span id="copyShortcutText">Copy App Link for Shortcut</span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -1750,6 +1774,27 @@
         setTimeout(() => {
           openDynamicIsland();
         }, 300);
+      });
+    }
+
+    // Copy App Link for iOS Shortcut
+    const btnCopyShortcutUrl = document.getElementById('btnCopyShortcutUrl');
+    if (btnCopyShortcutUrl) {
+      btnCopyShortcutUrl.addEventListener('click', () => {
+        const url = window.location.origin + window.location.pathname;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(url).then(() => {
+            const txt = document.getElementById('copyShortcutText');
+            if (txt) txt.innerText = '✓ Copied Link to Clipboard!';
+            setTimeout(() => {
+              if (txt) txt.innerText = 'Copy App Link for Shortcut';
+            }, 2500);
+          }).catch(() => {
+            prompt('Copy this link for your Shortcut:', url);
+          });
+        } else {
+          prompt('Copy this link for your Shortcut:', url);
+        }
       });
     }
 
