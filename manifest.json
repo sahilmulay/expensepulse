@@ -15,5 +15,21 @@
       "type": "image/svg+xml",
       "purpose": "any maskable"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "⚡ Quick Log Expense",
+      "short_name": "Quick Log",
+      "description": "Log an expense instantly",
+      "url": "./index.html?action=quick-log",
+      "icons": [{ "src": "icon.svg", "sizes": "192x192 512x512" }]
+    },
+    {
+      "name": "🧾 View Transactions",
+      "short_name": "Transactions",
+      "description": "View transaction history and search",
+      "url": "./index.html?action=transactions",
+      "icons": [{ "src": "icon.svg", "sizes": "192x192 512x512" }]
+    }
   ]
 }

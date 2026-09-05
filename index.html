@@ -704,7 +704,7 @@
               </div>
 
               <!-- Quick Solution Guide: Trigger Outside App / Lock Screen on iOS -->
-              <div class="p-3.5 bg-blue-50/60 rounded-b-2xl border-t border-blue-100 space-y-2">
+              <div class="p-3.5 bg-blue-50/60 border-t border-blue-100 space-y-2">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center space-x-1.5">
                     <i class="fa-brands fa-apple text-blue-600 text-xs"></i>
@@ -725,6 +725,26 @@
                   <i class="fa-solid fa-arrow-up-right-from-square text-xs text-blue-400"></i>
                   <span id="copyShortcutText">⚡ Copy Link & Open Apple Shortcuts</span>
                 </button>
+              </div>
+
+              <!-- Quick Solution Guide: Android 1-Tap Home Screen Widget -->
+              <div class="p-3.5 bg-emerald-50/60 rounded-b-2xl border-t border-emerald-100 space-y-2">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-1.5">
+                    <i class="fa-brands fa-android text-emerald-600 text-xs"></i>
+                    <span class="text-xs font-bold text-[#111317]">Android 1-Tap Home Screen Widget</span>
+                  </div>
+                  <span class="text-[9px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">Widget</span>
+                </div>
+                <p class="text-[11px] text-[#454854] leading-relaxed">
+                  Put a 1-tap instant logging widget directly onto your Android home screen:
+                </p>
+                <ol class="list-decimal list-inside space-y-1 text-[11px] text-[#454854] bg-white p-2.5 rounded-xl border border-emerald-100">
+                  <li>On your phone home screen, <strong class="text-[#111317]">long-press</strong> the ExpensePulse app icon.</li>
+                  <li>Touch and hold the <strong class="text-[#111317]">⚡ Quick Log</strong> popup item.</li>
+                  <li><strong class="text-[#111317]">Drag it onto your home screen</strong> as a standalone 1-tap widget!</li>
+                </ol>
+                <p class="text-[10px] text-[#717684]">Tapping this widget pops open the keypad instantly in under 1 second without opening other menus.</p>
               </div>
             </div>
           </div>
@@ -2174,6 +2194,29 @@
     renderSettingsCategories();
     renderAccountSelectors();
     renderAll();
+
+    // Deep-link Action Handler (Android Home Screen Widget & Shortcuts)
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const actionParam = urlParams.get('action');
+      const hashParam = window.location.hash;
+
+      if (actionParam === 'quick-log' || hashParam === '#log' || hashParam === '#quick') {
+        setTimeout(() => {
+          if (navigator.vibrate) navigator.vibrate(40);
+          openDynamicIsland();
+        }, 350);
+      } else if (actionParam === 'transactions' || hashParam === '#transactions') {
+        setTimeout(() => {
+          const txSection = document.getElementById('transactionsSection');
+          if (txSection) txSection.scrollIntoView({ behavior: 'smooth' });
+        }, 350);
+      } else if (actionParam === 'import' || hashParam === '#import') {
+        setTimeout(() => {
+          openImportModal();
+        }, 350);
+      }
+    } catch (e) {}
   </script>
 </body>
 </html>
