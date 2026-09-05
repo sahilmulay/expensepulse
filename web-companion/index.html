@@ -903,9 +903,13 @@
     // Load Monthly Budget from LocalStorage (default: 10,000)
     let monthlyBudget = parseFloat(localStorage.getItem('ep_monthly_budget') || '10000');
 
-    // Load Bank Accounts from LocalStorage or default
-    let bankAccounts = JSON.parse(localStorage.getItem('ep_bank_accounts') || '["State Bank of India 7067", "India Post Payment Bank 2938", "Cash"]');
-    let selectedAccount = bankAccounts[0] || "Cash";
+    // Load Bank Accounts from LocalStorage or default to Cash
+    let bankAccounts = JSON.parse(localStorage.getItem('ep_bank_accounts') || '["Cash"]');
+    if (!bankAccounts.includes("Cash")) {
+      bankAccounts.unshift("Cash");
+    }
+    let savedAcc = localStorage.getItem('ep_selected_account');
+    let selectedAccount = bankAccounts.includes(savedAcc) ? savedAcc : (bankAccounts[0] || "Cash");
 
     function saveTransactions() {
       localStorage.setItem('ep_transactions', JSON.stringify(transactions));
@@ -931,8 +935,8 @@
 
     // Render Budget Remaining Card
     function renderBudgetCard() {
-      const expenses = transactions.filter(t => t.type === 'EXPENSE');
-      const totalSpent = expenses.reduce((acc, t) => acc + t.amount, 0);
+      const expenses = transactions.filter(t => t && t.type === 'EXPENSE');
+      const totalSpent = expenses.reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
       const remaining = monthlyBudget - totalSpent;
       const pct = Math.min(Math.round((totalSpent / monthlyBudget) * 100), 100);
 
@@ -942,110 +946,141 @@
       const pctElem = document.getElementById('budgetPercentUsed');
       const capElem = document.getElementById('budgetTotalCap');
 
-      document.getElementById('monthlyBudgetInput').value = monthlyBudget;
-      capElem.innerText = `Limit: ₹${monthlyBudget.toLocaleString('en-IN')}`;
+      if (document.getElementById('monthlyBudgetInput')) document.getElementById('monthlyBudgetInput').value = monthlyBudget;
+      if (capElem) capElem.innerText = `Limit: ₹${monthlyBudget.toLocaleString('en-IN')}`;
 
       if (remaining >= 0) {
-        remainingElem.innerText = `₹ ${remaining.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})} left`;
-        remainingElem.className = 'text-xl sm:text-2xl font-extrabold text-[#111317] mt-0.5 tracking-tight break-words';
-        subtextElem.innerText = `Spent ₹${totalSpent.toLocaleString('en-IN', {maximumFractionDigits: 0})} of ₹${monthlyBudget.toLocaleString('en-IN')} limit`;
-        progressBar.style.width = `${pct}%`;
-        progressBar.className = 'bg-[#111317] h-full rounded-full transition-all duration-300';
-        pctElem.innerText = `${pct}% spent`;
-        pctElem.className = 'text-[11px] text-[#8C919E] font-medium';
+        if (remainingElem) {
+          remainingElem.innerText = `₹ ${remaining.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})} left`;
+          remainingElem.className = 'text-xl sm:text-2xl font-extrabold text-[#111317] mt-0.5 tracking-tight break-words';
+        }
+        if (subtextElem) subtextElem.innerText = `Spent ₹${totalSpent.toLocaleString('en-IN', {maximumFractionDigits: 0})} of ₹${monthlyBudget.toLocaleString('en-IN')} limit`;
+        if (progressBar) {
+          progressBar.style.width = `${pct}%`;
+          progressBar.className = 'bg-[#111317] h-full rounded-full transition-all duration-300';
+        }
+        if (pctElem) {
+          pctElem.innerText = `${pct}% spent`;
+          pctElem.className = 'text-[11px] text-[#8C919E] font-medium';
+        }
       } else {
         const overspent = Math.abs(remaining);
-        remainingElem.innerText = `Exceeded by ₹ ${overspent.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-        remainingElem.className = 'text-xl sm:text-2xl font-extrabold text-[#DC2626] mt-0.5 tracking-tight break-words';
-        subtextElem.innerText = `Spent ₹${totalSpent.toLocaleString('en-IN', {maximumFractionDigits: 0})} (Limit ₹${monthlyBudget.toLocaleString('en-IN')})`;
-        progressBar.style.width = `100%`;
-        progressBar.className = 'bg-[#DC2626] h-full rounded-full transition-all duration-300';
+        if (remainingElem) {
+          remainingElem.innerText = `Exceeded by ₹ ${overspent.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+          remainingElem.className = 'text-xl sm:text-2xl font-extrabold text-[#DC2626] mt-0.5 tracking-tight break-words';
+        }
+        if (subtextElem) subtextElem.innerText = `Spent ₹${totalSpent.toLocaleString('en-IN', {maximumFractionDigits: 0})} (Limit ₹${monthlyBudget.toLocaleString('en-IN')})`;
+        if (progressBar) {
+          progressBar.style.width = `100%`;
+          progressBar.className = 'bg-[#DC2626] h-full rounded-full transition-all duration-300';
+        }
         const overPct = Math.round((totalSpent / monthlyBudget) * 100);
-        pctElem.innerText = `${overPct}% spent (Over budget!)`;
-        pctElem.className = 'text-[11px] text-[#DC2626] font-bold';
+        if (pctElem) {
+          pctElem.innerText = `${overPct}% spent (Over budget!)`;
+          pctElem.className = 'text-[11px] text-[#DC2626] font-bold';
+        }
       }
     }
 
     // Render Account Selector Pills
     function renderAccountSelectors() {
       const islandContainer = document.getElementById('islandAccountsContainer');
-      islandContainer.innerHTML = '';
-      bankAccounts.forEach(acc => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        const isActive = acc === selectedAccount;
-        btn.className = `acc-btn py-2 px-3 rounded-xl text-xs font-semibold transition ${isActive ? 'active bg-white text-[#090A0E] font-bold' : 'bg-white/[0.06] text-[#C4C7D0] hover:bg-white/10'}`;
-        btn.innerText = acc;
-        btn.onclick = () => {
-          selectedAccount = acc;
-          renderAccountSelectors();
-        };
-        islandContainer.appendChild(btn);
-      });
+      if (islandContainer) {
+        islandContainer.innerHTML = '';
+        bankAccounts.forEach(acc => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          const isActive = acc === selectedAccount;
+          btn.className = `acc-btn py-2 px-3 rounded-xl text-xs font-semibold transition ${isActive ? 'active bg-white text-[#090A0E] font-bold' : 'bg-white/[0.06] text-[#C4C7D0] hover:bg-white/10'}`;
+          btn.innerText = acc === 'Cash' ? '💵 Cash' : acc;
+          btn.onclick = () => {
+            selectedAccount = acc;
+            localStorage.setItem('ep_selected_account', acc);
+            renderAccountSelectors();
+          };
+          islandContainer.appendChild(btn);
+        });
+      }
 
       const dashContainer = document.getElementById('dashboardAccountFilter');
-      dashContainer.innerHTML = '';
+      if (dashContainer) {
+        dashContainer.innerHTML = '';
 
-      const allBtn = document.createElement('button');
-      allBtn.className = `filter-btn flex-1 py-1.5 px-3 rounded-lg transition shrink-0 ${currentAccountFilter === 'ALL' ? 'active bg-white text-[#111317] shadow-xs font-bold' : 'text-[#60646F]'}`;
-      allBtn.innerText = 'All Accounts';
-      allBtn.onclick = () => {
-        currentAccountFilter = 'ALL';
-        renderAccountSelectors();
-        renderAll();
-      };
-      dashContainer.appendChild(allBtn);
-
-      bankAccounts.forEach(acc => {
-        const shortName = acc.includes('State Bank') ? 'SBI 7067' : acc.includes('India Post') ? 'IPPB 2938' : acc;
-        const btn = document.createElement('button');
-        btn.className = `filter-btn flex-1 py-1.5 rounded-lg transition whitespace-nowrap px-3 shrink-0 ${currentAccountFilter === acc ? 'active bg-white text-[#111317] shadow-xs font-bold' : 'text-[#60646F]'}`;
-        btn.innerText = shortName;
-        btn.onclick = () => {
-          currentAccountFilter = acc;
+        const allBtn = document.createElement('button');
+        allBtn.className = `filter-btn flex-1 py-1.5 px-3 rounded-lg transition shrink-0 ${currentAccountFilter === 'ALL' ? 'active bg-white text-[#111317] shadow-xs font-bold' : 'text-[#60646F]'}`;
+        allBtn.innerText = 'All Accounts';
+        allBtn.onclick = () => {
+          currentAccountFilter = 'ALL';
           renderAccountSelectors();
           renderAll();
         };
-        dashContainer.appendChild(btn);
-      });
+        dashContainer.appendChild(allBtn);
+
+        bankAccounts.forEach(acc => {
+          const shortName = acc === 'Cash' ? '💵 Cash' : acc.includes('State Bank') ? 'SBI 7067' : acc.includes('India Post') ? 'IPPB 2938' : acc;
+          const btn = document.createElement('button');
+          btn.className = `filter-btn flex-1 py-1.5 rounded-lg transition whitespace-nowrap px-3 shrink-0 ${currentAccountFilter === acc ? 'active bg-white text-[#111317] shadow-xs font-bold' : 'text-[#60646F]'}`;
+          btn.innerText = shortName;
+          btn.onclick = () => {
+            currentAccountFilter = acc;
+            renderAccountSelectors();
+            renderAll();
+          };
+          dashContainer.appendChild(btn);
+        });
+      }
 
       const settingsList = document.getElementById('bankAccountsList');
-      settingsList.innerHTML = '';
-      bankAccounts.forEach((acc, idx) => {
-        const row = document.createElement('div');
-        row.className = 'flex items-center justify-between p-3 rounded-xl bg-[#F8F9FA] border border-[#E9EBEF] text-xs';
-        row.innerHTML = `
-          <div class="flex items-center space-x-2.5">
-            <span class="text-sm">🏦</span>
-            <span class="font-bold text-[#111317]">${acc}</span>
-          </div>
-          ${bankAccounts.length > 1 ? `
-            <button class="text-[#DC2626] hover:text-red-700 p-1 text-xs" onclick="removeBank(${idx})">
-              <i class="fa-solid fa-trash"></i>
-            </button>
-          ` : ''}
-        `;
-        settingsList.appendChild(row);
-      });
+      if (settingsList) {
+        settingsList.innerHTML = '';
+        bankAccounts.forEach((acc, idx) => {
+          const isCash = acc === 'Cash';
+          const row = document.createElement('div');
+          row.className = 'flex items-center justify-between p-3 rounded-xl bg-[#F8F9FA] border border-[#E9EBEF] text-xs';
+          row.innerHTML = `
+            <div class="flex items-center space-x-2.5">
+              <span class="text-sm">${isCash ? '💵' : '🏦'}</span>
+              <span class="font-bold text-[#111317]">${acc}</span>
+              ${isCash ? '<span class="text-[10px] bg-[#EAECEF] text-[#454854] px-2 py-0.5 rounded-md font-bold">Default</span>' : ''}
+            </div>
+            ${!isCash ? `
+              <button type="button" class="text-[#DC2626] hover:text-red-700 p-1 text-xs transition" title="Delete account" onclick="removeBank(${idx})">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            ` : '<span class="text-[10px] text-[#8C919E] font-medium">Permanent</span>'}
+          `;
+          settingsList.appendChild(row);
+        });
+      }
     }
 
     window.removeBank = function(idx) {
-      if (bankAccounts.length <= 1) return alert('You must keep at least one account.');
-      bankAccounts.splice(idx, 1);
-      if (!bankAccounts.includes(selectedAccount)) {
-        selectedAccount = bankAccounts[0];
+      if (bankAccounts[idx] === 'Cash') {
+        return alert('Cash is the default permanent account and cannot be deleted.');
+      }
+      const removed = bankAccounts.splice(idx, 1)[0];
+      if (selectedAccount === removed || !bankAccounts.includes(selectedAccount)) {
+        selectedAccount = "Cash";
+        localStorage.setItem('ep_selected_account', "Cash");
+      }
+      if (currentAccountFilter === removed) {
+        currentAccountFilter = "ALL";
       }
       saveBankAccounts();
+      renderAll();
     };
 
     document.getElementById('btnAddBank').addEventListener('click', () => {
       const input = document.getElementById('newBankInput');
       const name = input.value.trim();
       if (!name) return alert('Please enter a bank account name');
-      if (bankAccounts.includes(name)) return alert('Account already exists');
+      if (bankAccounts.some(a => a.toLowerCase() === name.toLowerCase())) {
+        return alert('Account already exists');
+      }
       bankAccounts.push(name);
       input.value = '';
       saveBankAccounts();
+      renderAll();
     });
 
     // Clear Form when opening or closing
@@ -1702,10 +1737,16 @@
 
     // Clear All Data
     document.getElementById('btnClearAllData').addEventListener('click', () => {
-      if (confirm('Are you sure you want to clear all transactions for a completely fresh start?')) {
+      if (confirm('Are you sure you want to clear all transactions and reset bank accounts for a completely fresh start? Only the default Cash account will remain.')) {
         transactions = [];
+        bankAccounts = ["Cash"];
+        selectedAccount = "Cash";
+        currentAccountFilter = "ALL";
+        localStorage.setItem('ep_selected_account', "Cash");
+        saveBankAccounts();
         saveTransactions();
         closeSettings();
+        alert('All transactions cleared! Bank accounts reset to default Cash.');
       }
     });
 
@@ -1721,7 +1762,7 @@
     // ==========================================
     let currentEditingId = null;
     let editSelectedCat = customCategories[0]?.id || 'FOOD_DINING';
-    let editSelectedBank = 'State Bank of India 7067';
+    let editSelectedBank = 'Cash';
 
     function openEditModal(id) {
       const tx = transactions.find(t => (t.id && t.id === id) || (t.upi_id && t.upi_id === id));
@@ -1759,22 +1800,24 @@
 
       // Render accounts in edit modal
       const accContainer = document.getElementById('editAccountContainer');
-      accContainer.innerHTML = '';
-      bankAccounts.forEach(acc => {
-        const accName = typeof acc === 'object' ? (acc.name || '') : acc;
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        const isSelected = accName === editSelectedBank;
-        btn.className = isSelected 
-          ? 'py-1.5 px-3 rounded-xl text-xs font-bold border-2 border-[#111317] bg-[#111317] text-white'
-          : 'py-1.5 px-3 rounded-xl text-xs font-medium border border-[#E3E6EB] bg-[#F8F9FA] text-[#454854]';
-        btn.innerText = `🏦 ${accName}`;
-        btn.onclick = () => {
-          editSelectedBank = accName;
-          openEditModal(id);
-        };
-        accContainer.appendChild(btn);
-      });
+      if (accContainer) {
+        accContainer.innerHTML = '';
+        bankAccounts.forEach(acc => {
+          const accName = typeof acc === 'object' ? (acc.name || '') : acc;
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          const isSelected = accName === editSelectedBank;
+          btn.className = isSelected 
+            ? 'py-1.5 px-3 rounded-xl text-xs font-bold border-2 border-[#111317] bg-[#111317] text-white'
+            : 'py-1.5 px-3 rounded-xl text-xs font-medium border border-[#E3E6EB] bg-[#F8F9FA] text-[#454854]';
+          btn.innerText = accName === 'Cash' ? '💵 Cash' : `🏦 ${accName}`;
+          btn.onclick = () => {
+            editSelectedBank = accName;
+            openEditModal(id);
+          };
+          accContainer.appendChild(btn);
+        });
+      }
 
       document.getElementById('editTransactionModal').classList.remove('hidden');
     }
