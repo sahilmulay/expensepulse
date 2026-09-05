@@ -1058,39 +1058,55 @@
 
     // Master Render Function
     function renderAll() {
-      renderBudgetCard();
-      renderSummary();
-      renderTransactions();
-      renderFriends();
-      renderChart();
+      try {
+        renderBudgetCard();
+        renderSummary();
+        renderTransactions();
+        renderFriends();
+        renderChart();
+      } catch (err) {
+        console.error('Render error:', err);
+      }
     }
 
     function getFilteredTransactions() {
+      if (!Array.isArray(transactions)) return [];
       if (currentAccountFilter === "ALL") return transactions;
-      return transactions.filter(t => t.bank.toLowerCase().includes(currentAccountFilter.toLowerCase()));
+      return transactions.filter(t => (t && t.bank ? String(t.bank) : '').toLowerCase().includes(currentAccountFilter.toLowerCase()));
     }
 
     function renderSummary() {
       const filtered = getFilteredTransactions();
-      const expenses = filtered.filter(t => t.type === 'EXPENSE');
-      const incomes = filtered.filter(t => t.type === 'INCOME' || t.type === 'SETTLEMENT');
+      const expenses = filtered.filter(t => t && t.type === 'EXPENSE');
+      const incomes = filtered.filter(t => t && (t.type === 'INCOME' || t.type === 'SETTLEMENT'));
       
-      const totalSent = expenses.reduce((acc, t) => acc + t.amount, 0);
-      const totalRecv = incomes.reduce((acc, t) => acc + t.amount, 0);
+      const totalSent = expenses.reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+      const totalRecv = incomes.reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
 
-      document.getElementById('totalSentDisplay').innerText = `₹ ${totalSent.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-      document.getElementById('totalRecvDisplay').innerText = `₹ ${totalRecv.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-      document.getElementById('txCountDisplay').innerText = `${filtered.length} items`;
-      document.getElementById('txCountBadge').innerText = `${filtered.length} items`;
+      const totalSentDisplay = document.getElementById('totalSentDisplay');
+      if (totalSentDisplay) totalSentDisplay.innerText = `₹ ${totalSent.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+      
+      const totalRecvDisplay = document.getElementById('totalRecvDisplay');
+      if (totalRecvDisplay) totalRecvDisplay.innerText = `₹ ${totalRecv.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+      
+      const txCountDisplay = document.getElementById('txCountDisplay');
+      if (txCountDisplay) txCountDisplay.innerText = `${filtered.length} items`;
+      
+      const txCountBadge = document.getElementById('txCountBadge');
+      if (txCountBadge) txCountBadge.innerText = `${filtered.length} items`;
     }
 
     function renderTransactions() {
       const container = document.getElementById('transactionsContainer');
-      const query = document.getElementById('searchInput').value.toLowerCase();
-      const filtered = getFilteredTransactions().filter(t => 
-        t.action.toLowerCase().includes(query) || 
-        t.amount.toString().includes(query)
-      );
+      if (!container) return;
+      const searchInput = document.getElementById('searchInput');
+      const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+      const filtered = getFilteredTransactions().filter(t => {
+        if (!t) return false;
+        const act = (t.action || '').toLowerCase();
+        const amt = (t.amount != null ? String(t.amount) : '');
+        return act.includes(query) || amt.includes(query);
+      });
 
       container.innerHTML = '';
       if (filtered.length === 0) {
@@ -1129,20 +1145,23 @@
           icon = 'fa-arrow-up';
         }
 
-        const bankTag = t.bank.includes('7067') ? 'SBI 7067' : t.bank.includes('2938') ? 'IPPB 2938' : t.bank;
+        const bankStr = t.bank ? String(t.bank) : 'Cash';
+        const bankTag = bankStr.includes('7067') ? 'SBI 7067' : bankStr.includes('2938') ? 'IPPB 2938' : bankStr;
+        const amountNum = Number(t.amount) || 0;
+        const displayId = t.id || t.upi_id || 'TX_' + Math.random();
 
         const item = document.createElement('div');
         item.className = 'bg-white p-3.5 rounded-xl border border-[#E9EBEF] flex items-center justify-between hover:border-[#111317] hover:shadow-xs cursor-pointer transition active:scale-[0.99]';
-        item.onclick = () => openEditModal(t.id || t.upi_id);
+        item.onclick = () => openEditModal(displayId);
         item.innerHTML = `
           <div class="flex items-center space-x-3 min-w-0 flex-1 mr-2">
             <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs shrink-0 ${iconBg}">
               <i class="fa-solid ${icon}"></i>
             </div>
             <div class="min-w-0 flex-1">
-              <div class="text-xs font-bold text-[#111317] truncate">${t.action}</div>
+              <div class="text-xs font-bold text-[#111317] truncate">${t.action || 'Expense'}</div>
               <div class="flex items-center space-x-2 text-[10px] text-[#8C919E] mt-0.5 truncate">
-                <span>${t.date}</span>
+                <span>${t.date || ''}</span>
                 <span>•</span>
                 <span class="font-medium text-[#60646F] truncate">${bankTag}</span>
                 <span>•</span>
@@ -1151,7 +1170,7 @@
             </div>
           </div>
           <div class="text-right shrink-0">
-            <div class="text-xs ${amountStyle}">${prefix}${t.amount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</div>
+            <div class="text-xs ${amountStyle}">${prefix}${amountNum.toLocaleString('en-IN', {minimumFractionDigits: 2})}</div>
             ${isTransfer ? '<span class="text-[9px] font-bold text-[#2563EB] uppercase tracking-tight block">Transfer</span>' : ''}
           </div>
         `;
@@ -1162,18 +1181,19 @@
     function renderFriends() {
       const container = document.getElementById('friendList');
       const section = document.getElementById('friendSplitsSection');
+      if (!container || !section) return;
       const friends = ["Vedant Satish Jadhav", "Nihal Jahid Shaikh", "Aditya Kerimane", "Kedar Patil", "Amruta Mote"];
       
       container.innerHTML = '';
       let hasFriends = false;
 
       friends.forEach(name => {
-        const friendTxs = transactions.filter(t => t.action.toLowerCase().includes(name.toLowerCase()));
+        const friendTxs = transactions.filter(t => t && t.action && t.action.toLowerCase().includes(name.toLowerCase()));
         if (friendTxs.length === 0) return;
         hasFriends = true;
 
-        const sent = friendTxs.filter(t => t.type === 'EXPENSE').reduce((acc, t) => acc + t.amount, 0);
-        const recv = friendTxs.filter(t => t.type !== 'EXPENSE').reduce((acc, t) => acc + t.amount, 0);
+        const sent = friendTxs.filter(t => t.type === 'EXPENSE').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+        const recv = friendTxs.filter(t => t.type !== 'EXPENSE').reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
         const net = recv - sent;
 
         const card = document.createElement('div');
@@ -1210,7 +1230,7 @@
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
 
-      const filteredExpenses = getFilteredTransactions().filter(t => t.type === 'EXPENSE');
+      const filteredExpenses = getFilteredTransactions().filter(t => t && t.type === 'EXPENSE');
 
       const catTotals = {};
       customCategories.forEach(c => {
@@ -1225,7 +1245,7 @@
         }
         const label = matched ? matched.label : (customCategories[customCategories.length - 1]?.label || 'Other');
         if (catTotals[label] === undefined) catTotals[label] = 0;
-        catTotals[label] += t.amount;
+        catTotals[label] += (Number(t.amount) || 0);
       });
 
       const totalVal = Object.values(catTotals).reduce((a, b) => a + b, 0);
@@ -1239,7 +1259,7 @@
         categoryChartInstance.data.datasets[0].data = totalVal === 0 ? [1] : Object.values(catTotals);
         categoryChartInstance.data.datasets[0].backgroundColor = totalVal === 0 ? ['#EAECEF'] : chartColors.slice(0, Object.keys(catTotals).length);
         categoryChartInstance.update('none');
-      } else {
+      } else if (window.Chart) {
         categoryChartInstance = new Chart(ctx, {
           type: 'doughnut',
           data: {
@@ -1268,6 +1288,11 @@
     }
 
     // Dynamic Island State Controller
+    let isIslandActive = false;
+    let pageLoadTime = Date.now();
+    let lastIslandDismissTime = 0;
+    let shakeEnabled = JSON.parse(localStorage.getItem('ep_shake_enabled') || 'true');
+
     const dynamicIsland = document.getElementById('dynamicIsland');
     const islandForm = document.getElementById('islandForm');
     const islandSuccess = document.getElementById('islandSuccess');
@@ -1275,54 +1300,78 @@
     const islandNoteInput = document.getElementById('islandNoteInput');
 
     function openDynamicIsland() {
+      isIslandActive = true;
       clearDynamicIslandForm();
 
-      islandSuccess.classList.add('hidden');
-      islandForm.classList.remove('hidden');
-      islandForm.classList.add('opacity-0');
-
-      dynamicIsland.classList.remove('island-close', 'island-idle-hidden');
-      dynamicIsland.classList.add('island-open');
-
-      setTimeout(() => {
+      if (islandSuccess) islandSuccess.classList.add('hidden');
+      if (islandForm) {
+        islandForm.classList.remove('hidden');
         islandForm.classList.remove('opacity-0');
-      }, 140);
+      }
+
+      if (dynamicIsland) {
+        dynamicIsland.classList.remove('island-close', 'island-idle-hidden');
+        dynamicIsland.classList.add('island-open');
+      }
 
       setTimeout(() => {
-        islandAmountInput.focus();
-      }, 350);
+        if (islandAmountInput) islandAmountInput.focus();
+      }, 250);
     }
 
     function dismissDynamicIsland() {
-      islandForm.classList.add('opacity-0');
+      if (islandForm) islandForm.classList.add('opacity-0');
 
-      dynamicIsland.classList.remove('island-open');
-      dynamicIsland.classList.add('island-close');
+      if (dynamicIsland) {
+        dynamicIsland.classList.remove('island-open');
+        dynamicIsland.classList.add('island-close');
+      }
 
       setTimeout(() => {
+        if (dynamicIsland) {
+          dynamicIsland.classList.add('island-idle-hidden');
+          dynamicIsland.classList.remove('island-close');
+        }
+        if (islandSuccess) islandSuccess.classList.add('hidden');
         clearDynamicIslandForm();
-      }, 320);
+        isIslandActive = false;
+        lastIslandDismissTime = Date.now();
+      }, 350);
     }
 
     function showSuccessInIsland(amount, label) {
-      islandForm.classList.add('opacity-0');
+      if (islandForm) {
+        islandForm.classList.add('opacity-0');
+      }
 
       setTimeout(() => {
-        islandForm.classList.add('hidden');
-        islandSuccess.classList.remove('hidden');
-        document.getElementById('successText').innerText = `Logged ₹${amount} (${label})`;
+        if (islandForm) islandForm.classList.add('hidden');
+        if (islandSuccess) islandSuccess.classList.remove('hidden');
+        const successText = document.getElementById('successText');
+        if (successText) successText.innerText = `Logged ₹${amount} (${label})`;
 
         setTimeout(() => {
-          dynamicIsland.classList.remove('island-open');
-          dynamicIsland.classList.add('island-close');
-          clearDynamicIslandForm();
-        }, 1100);
-      }, 120);
+          if (dynamicIsland) {
+            dynamicIsland.classList.remove('island-open');
+            dynamicIsland.classList.add('island-close');
+          }
+
+          setTimeout(() => {
+            if (dynamicIsland) {
+              dynamicIsland.classList.add('island-idle-hidden');
+              dynamicIsland.classList.remove('island-close');
+            }
+            if (islandSuccess) islandSuccess.classList.add('hidden');
+            clearDynamicIslandForm();
+            isIslandActive = false;
+            lastIslandDismissTime = Date.now();
+          }, 320);
+        }, 900);
+      }, 100);
     }
 
     // Header Buttons
     document.getElementById('btnHeaderAddExpense').addEventListener('click', openDynamicIsland);
-    // cameraAnchor removed
     document.getElementById('btnDismissIsland').addEventListener('click', dismissDynamicIsland);
 
     // Save Expense
@@ -1773,24 +1822,6 @@
     // ==========================================
     // IPHONE BACK-TAP (DOUBLE TAP) & SHAKE ENGINE
     // ==========================================
-    let isIslandActive = false;
-    let pageLoadTime = Date.now();
-    let lastIslandDismissTime = 0;
-    let shakeEnabled = JSON.parse(localStorage.getItem('ep_shake_enabled') || 'true');
-
-    const originalOpenDynamicIsland = openDynamicIsland;
-    openDynamicIsland = function() {
-      isIslandActive = true;
-      originalOpenDynamicIsland();
-    };
-
-    const originalDismissDynamicIsland = dismissDynamicIsland;
-    dismissDynamicIsland = function() {
-      originalDismissDynamicIsland();
-      lastIslandDismissTime = Date.now();
-      setTimeout(() => { isIslandActive = false; }, 600);
-    };
-
     // Auto-request iOS 13+ motion permission on first user touch/tap
     let motionPermissionGranted = false;
     async function requestMotionPermission() {
